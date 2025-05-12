@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import DestinationForm from './components/DestinationForm';
 import DestinationList from './components/DestinationList';
+import FiltersBar from './components/FiltersBar';
 import api from './services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
-  const [destinations, setDestinations] = useState([]);
+  const [originalResults, setOriginalResults] = useState([]);
+  const [filteredResults, setFilteredResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleSearch = async (filters) => {
     try {
       setLoading(true);
       const res = await api.post('/destinations', filters);
-      setDestinations(res.data);
+      setOriginalResults(res.data);
+      setFilteredResults(res.data); // inicializa com tudo
     } catch (err) {
       console.error('Erro ao buscar destinos:', err);
       alert('Erro ao buscar destinos.');
@@ -21,20 +24,17 @@ function App() {
     }
   };
 
-
   return (
     <div className="container py-5">
       <h1 className="mb-4 text-center">✈️ Mochilei Barato</h1>
       <DestinationForm onSearch={handleSearch} />
-      {loading ? (
-        <div className="text-center my-4">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Carregando...</span>
-          </div>
-        </div>
-      ) : (
-        <DestinationList destinations={destinations} />
+      {originalResults.length > 0 && (
+        <FiltersBar
+          originalResults={originalResults}
+          setFilteredResults={setFilteredResults}
+        />
       )}
+      <DestinationList destinations={filteredResults} />
     </div>
   );
 }

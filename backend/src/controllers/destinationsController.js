@@ -1,33 +1,52 @@
-// backend/src/controllers/destinations.controller.js
-const { mockFlightApi, searchAmadeusFlights } = require('../services/flightsService');
-const cities = require('../data/cities.json');
-
 class DestinationsController {
-  static async searchDestinations(origin, month, budget) {
+  static async searchDestinations(origin, month, budget, destination = null) {
     try {
-      // Encontra a cidade de origem com base no nome
-      const originCity = cities.find(city => city.name.toLowerCase() === origin.toLowerCase());
-      if (!originCity) throw new Error(`Cidade de origem não encontrada: ${origin}`);
+      const departureDate = generateDepartureDate(month);
 
-      const originIata = originCity.iataCode;
+      const results = []; // <-- Declare aqui
 
-      // Define uma data de embarque futura (15 dias a partir de hoje)
-      const departureDateObj = new Date();
-      departureDateObj.setDate(departureDateObj.getDate() + 15);
-      const departureDate = departureDateObj.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      if (destination) {
+        const flightResults = await searchAmadeusFlights(origin, destination, departureDate, budget);
 
-      // Filtra destinos válidos no Brasil e no mês selecionado
+        console.log("Resultados de voos:", flightResults);
+
+        for (const flight of flightResults) {
+          const itinerary = flight.itineraries?.[0];
+          const segment = itinerary?.segments?.[0];
+          const pricing = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
+
+          if (!itinerary || !segment || !pricing) {
+            continue;
+          }
+
+          results.push({
+            price: flight.price.total,
+            duration: itinerary.duration,
+            departure: segment.departure.at,
+            arrival: segment.arrival.at,
+            stops: itinerary.segments.length - 1,
+            airline: segment.carrierCode,
+            cabin: pricing.cabin,
+            aircraft: segment.aircraft?.code,
+            flightNumber: segment.number
+          });
+        }
+
+        return results.sort((a, b) => parseFloat(a.price) - parseFloat(b.price)); // <-- importante
+      }
+
+      // Caso contrário, comportamento de sugestão
       const validCities = cities.filter(city =>
         city.bestMonths.includes(month) &&
         city.country === "Brasil" &&
-        city.iataCode !== originIata // evita buscar a própria cidade
+        city.iataCode !== origin
       );
 
       const searchResults = [];
 
       for (const city of validCities) {
         try {
-          const flights = await searchAmadeusFlights(originIata, city.iataCode, departureDate, budget);
+          const flights = await searchAmadeusFlights(origin, city.iataCode, departureDate, budget);
 
           if (flights && flights.length > 0) {
             const cheapest = flights[0];
@@ -43,7 +62,6 @@ class DestinationsController {
           }
         } catch (err) {
           console.warn(`Erro ao buscar voos para ${city.name}:`, err.message);
-          continue;
         }
       }
 
@@ -54,5 +72,3 @@ class DestinationsController {
     }
   }
 }
-
-module.exports = DestinationsController;

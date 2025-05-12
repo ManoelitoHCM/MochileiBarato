@@ -1,8 +1,10 @@
 // app.js
 const express = require('express');
 const cors = require('cors');
-const destinationsRouter = require('./routes/destinationsRoutes');
 require('dotenv').config();
+
+const destinationsRouter = require('./routes/destinationsRoutes');
+const cityRoutes = require('./routes/cityRoutes');
 
 const app = express();
 
@@ -12,5 +14,6 @@ app.use(express.json());
 
 // Rotas
 app.use('/api/destinations', destinationsRouter);
+app.use('/api/cities', cityRoutes);
 
 module.exports = app;

@@ -1,15 +1,6 @@
 // backend/src/services/flights.service.js
 const axios = require('axios');
 
-// MOCK para fase de testes
-/**function mockFlightApi(origin, cities, budget) {
-  return cities.map(city => ({
-    ...city,
-    price: Math.floor(Math.random() * (budget - 500)) + 500,
-    flightDuration: `${Math.floor(Math.random() * 6) + 2}h`,
-  })).filter(city => city.price <= budget);
-}*/
-
 // Autenticação na API da Amadeus
 async function getAmadeusAccessToken() {
   try {
@@ -61,6 +52,8 @@ async function searchAmadeusFlights(origin, destination, departureDate, maxPrice
       }
     });
 
+    console.dir(response.data, { depth: null }); // 👈 Aqui!
+
     return response.data.data;
   } catch (error) {
     console.error('Erro ao buscar voos na Amadeus:', error.response?.data || error.message);
@@ -70,7 +63,6 @@ async function searchAmadeusFlights(origin, destination, departureDate, maxPrice
 
 // Exporta tudo junto
 module.exports = {
-//  mockFlightApi,
   getAmadeusAccessToken,
   searchAmadeusFlights,
 };
