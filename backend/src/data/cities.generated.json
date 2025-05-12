@@ -1,0 +1,131 @@
+[
+  {
+    "name": "Cabo Frio",
+    "iataCode": "CFB",
+    "country": "Brasil"
+  },
+  {
+    "name": "Rio de Janeiro",
+    "iataCode": "RIO",
+    "country": "Brasil"
+  },
+  {
+    "name": "Santa Isabel do Rio Negro",
+    "iataCode": "IRZ",
+    "country": "Brasil"
+  },
+  {
+    "name": "Lucas do Rio Verde",
+    "iataCode": "LVR",
+    "country": "Brasil"
+  },
+  {
+    "name": "Tres Rios",
+    "iataCode": "QIH",
+    "country": "Brasil"
+  },
+  {
+    "name": "Rio Claro",
+    "iataCode": "QIQ",
+    "country": "Brasil"
+  },
+  {
+    "name": "Rio Negrinho",
+    "iataCode": "QNE",
+    "country": "Brasil"
+  },
+  {
+    "name": "Santa Cruz Rio Pardo",
+    "iataCode": "QNR",
+    "country": "Brasil"
+  },
+  {
+    "name": "Rio do Sul",
+    "iataCode": "QRU",
+    "country": "Brasil"
+  },
+  {
+    "name": "Rio Branco",
+    "iataCode": "RBR",
+    "country": "Brasil"
+  },
+  {
+    "name": "Salvador",
+    "iataCode": "SSA",
+    "country": "Brasil"
+  },
+  {
+    "name": "Fortaleza",
+    "iataCode": "FOR",
+    "country": "Brasil"
+  },
+  {
+    "name": "Recife",
+    "iataCode": "REC",
+    "country": "Brasil"
+  },
+  {
+    "name": "Belo Horizonte",
+    "iataCode": "BHZ",
+    "country": "Brasil"
+  },
+  {
+    "name": "Porto Feliz",
+    "country": "Brasil"
+  },
+  {
+    "name": "Manaus",
+    "iataCode": "MAO",
+    "country": "Brasil"
+  },
+  {
+    "name": "Natal",
+    "iataCode": "NAT",
+    "country": "Brasil"
+  },
+  {
+    "name": "Foz do Iguacu",
+    "iataCode": "IGU",
+    "country": "Brasil"
+  },
+  {
+    "name": "Porto Seguro",
+    "iataCode": "BPS",
+    "country": "Brasil"
+  },
+  {
+    "name": "Porto dos Gauchos",
+    "iataCode": "PBV",
+    "country": "Brasil"
+  },
+  {
+    "name": "Porto Alegre do Norte",
+    "iataCode": "PBX",
+    "country": "Brasil"
+  },
+  {
+    "name": "Porto Nacional",
+    "iataCode": "PNB",
+    "country": "Brasil"
+  },
+  {
+    "name": "Porto Alegre",
+    "iataCode": "POA",
+    "country": "Brasil"
+  },
+  {
+    "name": "Porto de Moz",
+    "iataCode": "PTQ",
+    "country": "Brasil"
+  },
+  {
+    "name": "Porto Velho",
+    "iataCode": "PVH",
+    "country": "Brasil"
+  },
+  {
+    "name": "Porto Uniao",
+    "iataCode": "QPU",
+    "country": "Brasil"
+  }
+]
