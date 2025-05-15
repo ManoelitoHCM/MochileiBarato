@@ -14,7 +14,6 @@ class DestinationsController {
     try {
       const formattedDeparture = generateDepartureDateFromInput(departureDate);
       const formattedReturn = returnDate ? generateDepartureDateFromInput(returnDate) : null;
-      const results = [];
 
       if (destination) {
         const flightResults = await searchAmadeusFlights(origin, destination, formattedDeparture, budget, formattedReturn);
@@ -22,32 +21,60 @@ class DestinationsController {
         console.log("🔍 Resultado bruto da API Amadeus:");
         console.dir(flightResults, { depth: null });
 
+        const outboundResults = [];
+        const inboundResults = [];
+
         for (const flight of flightResults) {
-          const itinerary = Array.isArray(flight.itineraries) ? flight.itineraries[0] : null;
-          const segment = itinerary && Array.isArray(itinerary.segments) ? itinerary.segments[0] : null;
+          if (!Array.isArray(flight.itineraries) || flight.itineraries.length === 0) {
+            console.warn("Voo sem itinerários:", flight);
+            continue;
+          }
+
           const pricing = Array.isArray(flight.travelerPricings)
             ? flight.travelerPricings[0]?.fareDetailsBySegment?.[0]
             : null;
 
-          if (!itinerary || !segment || !pricing) {
-            console.warn("Dados incompletos no voo:", flight);
-            continue;
+          const itineraryOut = flight.itineraries[0];
+          const segmentOut = itineraryOut?.segments?.[0];
+
+          if (segmentOut && pricing) {
+            outboundResults.push({
+              price: flight.price.total,
+              duration: itineraryOut.duration,
+              departure: segmentOut.departure.at,
+              arrival: segmentOut.arrival.at,
+              stops: itineraryOut.segments.length - 1,
+              airline: segmentOut.carrierCode,
+              cabin: pricing.cabin,
+              aircraft: segmentOut.aircraft?.code,
+              flightNumber: segmentOut.number
+            });
           }
 
-          results.push({
-            price: flight.price.total,
-            duration: itinerary.duration,
-            departure: segment.departure.at,
-            arrival: segment.arrival.at,
-            stops: itinerary.segments.length - 1,
-            airline: segment.carrierCode,
-            cabin: pricing.cabin,
-            aircraft: segment.aircraft?.code,
-            flightNumber: segment.number
-          });
+          if (tripType === 'round-trip' && flight.itineraries.length > 1) {
+            const itineraryIn = flight.itineraries[1];
+            const segmentIn = itineraryIn?.segments?.[0];
+
+            if (segmentIn) {
+              inboundResults.push({
+                price: flight.price.total,
+                duration: itineraryIn.duration,
+                departure: segmentIn.departure.at,
+                arrival: segmentIn.arrival.at,
+                stops: itineraryIn.segments.length - 1,
+                airline: segmentIn.carrierCode,
+                cabin: pricing?.cabin,
+                aircraft: segmentIn.aircraft?.code,
+                flightNumber: segmentIn.number
+              });
+            }
+          }
         }
 
-        return results.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        return {
+          outbound: outboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price)),
+          inbound: inboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+        };
       }
 
       const validCities = cities.filter(city =>
