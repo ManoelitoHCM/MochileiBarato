@@ -63,15 +63,13 @@ const DestinationForm = ({ onSearch }) => {
 
       <div className="mb-3">
         <label className="form-label">Mês da viagem</label>
-        <select className="form-select" value={month} onChange={e => setMonth(e.target.value)} required>
-          <option value="">Selecione um mês</option>
-          {[
-            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-          ].map(m => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
+        <input
+          className="form-control"
+          type="month"
+          value={month}
+          onChange={e => setMonth(e.target.value)}
+          required
+        />
       </div>
 
       <div className="mb-3">

@@ -1,3 +1,12 @@
+const { searchAmadeusFlights } = require('../services/flightsService');
+
+// Gera uma data válida com base no mês informado
+function generateDepartureDate(monthYear) {
+  const [year, month] = monthYear.split('-').map(Number);
+  const date = new Date(year, month - 1, 10); // dia fixo (10)
+  return date.toISOString().split('T')[0];
+}
+
 class DestinationsController {
   static async searchDestinations(origin, month, budget, destination = null) {
     try {
@@ -8,14 +17,18 @@ class DestinationsController {
       if (destination) {
         const flightResults = await searchAmadeusFlights(origin, destination, departureDate, budget);
 
-        console.log("Resultados de voos:", flightResults);
+        console.log("🔍 Resultado bruto da API Amadeus:");
+        console.dir(flightResults, { depth: null });
 
         for (const flight of flightResults) {
-          const itinerary = flight.itineraries?.[0];
-          const segment = itinerary?.segments?.[0];
-          const pricing = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
+          const itinerary = Array.isArray(flight.itineraries) ? flight.itineraries[0] : null;
+          const segment = itinerary && Array.isArray(itinerary.segments) ? itinerary.segments[0] : null;
+          const pricing = Array.isArray(flight.travelerPricings)
+            ? flight.travelerPricings[0]?.fareDetailsBySegment?.[0]
+            : null;
 
           if (!itinerary || !segment || !pricing) {
+            console.warn("Dados incompletos no voo:", flight);
             continue;
           }
 
@@ -31,6 +44,7 @@ class DestinationsController {
             flightNumber: segment.number
           });
         }
+
 
         return results.sort((a, b) => parseFloat(a.price) - parseFloat(b.price)); // <-- importante
       }
@@ -72,3 +86,5 @@ class DestinationsController {
     }
   }
 }
+
+module.exports = DestinationsController;

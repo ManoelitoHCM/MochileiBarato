@@ -52,8 +52,11 @@ async function searchAmadeusFlights(origin, destination, departureDate, maxPrice
       }
     });
 
-    console.dir(response.data, { depth: null }); // 👈 Aqui!
+    console.dir(response.data, { depth: null });
 
+    console.log("🔍 Resultado bruto da API Amadeus:");
+    console.log(response.data, { depth: null });
+    
     return response.data.data;
   } catch (error) {
     console.error('Erro ao buscar voos na Amadeus:', error.response?.data || error.message);
