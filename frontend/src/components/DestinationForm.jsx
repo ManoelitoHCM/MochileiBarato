@@ -9,6 +9,13 @@ const DestinationForm = ({ onSearch, loading }) => {
   const [month, setMonth] = useState('');
   const [budget, setBudget] = useState('');
 
+  const today = new Date();
+  const minMonth = today.toISOString().slice(0, 7);
+
+  const maxDate = new Date();
+  maxDate.setMonth(maxDate.getMonth() + 12);
+  const maxMonth = maxDate.toISOString().slice(0, 7);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!origin || !month || !budget) {
@@ -58,8 +65,11 @@ const DestinationForm = ({ onSearch, loading }) => {
           type="month"
           value={month}
           onChange={e => setMonth(e.target.value)}
+          min={minMonth}
+          max={maxMonth}
           required
         />
+
       </div>
 
       <div className="mb-3">

@@ -3,7 +3,16 @@ import { Card, Badge } from 'react-bootstrap';
 import { formatAirline } from '../utils/airlines';
 
 const formatDateTime = (str) =>
-  str ? new Date(str).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'Indefinido';
+  str
+    ? new Date(str).toLocaleString('pt-BR', {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+    : 'Indefinido';
 
 const DestinationList = ({ destinations }) => {
   if (!destinations || destinations.length === 0) {
@@ -29,8 +38,8 @@ const DestinationList = ({ destinations }) => {
                 <>
                   <Card.Title>{dest.origin} → {dest.destination}</Card.Title>
                   <p><strong>✈️ Companhia:</strong> {formatAirline(dest.airline)}</p>
-                  <p><strong>🛫 Partida:</strong> {formatDateTime(dest.departureTime)}</p>
-                  <p><strong>🛬 Chegada:</strong> {formatDateTime(dest.arrivalTime)}</p>
+                  <p><strong>🛫 Partida:</strong> {formatDateTime(dest.departure)}</p>
+                  <p><strong>🛬 Chegada:</strong> {formatDateTime(dest.arrival)}</p>
                   <p><strong>⏱️ Duração:</strong> {dest.duration.replace('PT', '').toLowerCase()}</p>
                   <p>
                     <strong>💺 Cabine:</strong> <Badge bg="secondary">{dest.cabin}</Badge>
