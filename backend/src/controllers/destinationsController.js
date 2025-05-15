@@ -1,43 +1,36 @@
 const { searchAmadeusFlights } = require('../services/flightsService');
-const cities = require('../data/cities.json'); // importante: não esqueça essa linha!
+const cities = require('../data/cities.json');
 
-// Gera uma data válida com base no mês informado e limita a 360 dias no futuro
-function generateDepartureDate(monthYear) {
-  const [year, month] = monthYear.split('-').map(Number);
-  const date = new Date(year, month - 1, 10); // dia fixo 10
-
-  const now = new Date();
+function generateDepartureDateFromInput(dateStr) {
+  const inputDate = new Date(dateStr);
   const maxDate = new Date();
-  maxDate.setDate(now.getDate() + 360);
+  maxDate.setDate(maxDate.getDate() + 360);
 
-  if (date > maxDate) {
-    console.warn('⚠️ Data muito no futuro. Ajustando para data máxima permitida.');
-    return maxDate.toISOString().split('T')[0];
-  }
-
-  return date.toISOString().split('T')[0];
+  return inputDate > maxDate ? maxDate.toISOString().split('T')[0] : dateStr;
 }
 
 class DestinationsController {
-  static async searchDestinations(origin, month, budget, destination = null) {
+  static async searchDestinations(origin, departureDate, budget, destination = null, returnDate = null, tripType = 'one-way') {
     try {
-      const departureDate = generateDepartureDate(month);
+      const formattedDeparture = generateDepartureDateFromInput(departureDate);
+      const formattedReturn = returnDate ? generateDepartureDateFromInput(returnDate) : null;
       const results = [];
 
-      // Caso: destino direto
       if (destination) {
-        const flightResults = await searchAmadeusFlights(origin, destination, departureDate, budget);
+        const flightResults = await searchAmadeusFlights(origin, destination, formattedDeparture, budget, formattedReturn);
 
         console.log("🔍 Resultado bruto da API Amadeus:");
         console.dir(flightResults, { depth: null });
 
         for (const flight of flightResults) {
           const itinerary = Array.isArray(flight.itineraries) ? flight.itineraries[0] : null;
-          const segment = itinerary?.segments?.[0];
-          const pricing = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
+          const segment = itinerary && Array.isArray(itinerary.segments) ? itinerary.segments[0] : null;
+          const pricing = Array.isArray(flight.travelerPricings)
+            ? flight.travelerPricings[0]?.fareDetailsBySegment?.[0]
+            : null;
 
           if (!itinerary || !segment || !pricing) {
-            console.warn("❌ Dados incompletos no voo:", flight);
+            console.warn("Dados incompletos no voo:", flight);
             continue;
           }
 
@@ -50,18 +43,14 @@ class DestinationsController {
             airline: segment.carrierCode,
             cabin: pricing.cabin,
             aircraft: segment.aircraft?.code,
-            flightNumber: segment.number,
-            origin,
-            destination
+            flightNumber: segment.number
           });
         }
 
         return results.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
       }
 
-      // Caso: sugestão de destinos
       const validCities = cities.filter(city =>
-        city.bestMonths.includes(month) &&
         city.country === "Brasil" &&
         city.iataCode !== origin
       );
@@ -70,9 +59,9 @@ class DestinationsController {
 
       for (const city of validCities) {
         try {
-          const flights = await searchAmadeusFlights(origin, city.iataCode, departureDate, budget);
+          const flights = await searchAmadeusFlights(origin, city.iataCode, formattedDeparture, budget);
 
-          if (flights?.length > 0) {
+          if (flights && flights.length > 0) {
             const cheapest = flights[0];
 
             searchResults.push({

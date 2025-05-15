@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DestinationForm from './components/DestinationForm';
 import DestinationList from './components/DestinationList';
 import FiltersBar from './components/FiltersBar';
+import SearchModeSelector from './components/SearchModeSelector';
 import api from './services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -27,9 +28,7 @@ function App() {
   return (
     <div className="container py-5">
       <h1 className="mb-4 text-center">✈️ Mochilei Barato</h1>
-
-      {/* Formulário com loading passado como prop */}
-      <DestinationForm onSearch={handleSearch} loading={loading} />
+      <SearchModeSelector onSearch={handleSearch} loading={loading} />
 
       {/* Indicador de carregamento */}
       {loading && (

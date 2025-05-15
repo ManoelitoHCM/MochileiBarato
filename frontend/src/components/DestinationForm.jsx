@@ -6,29 +6,38 @@ const DestinationForm = ({ onSearch, loading }) => {
   const [originLabel, setOriginLabel] = useState('');
   const [destination, setDestination] = useState('');
   const [destinationLabel, setDestinationLabel] = useState('');
-  const [month, setMonth] = useState('');
+  const [tripType, setTripType] = useState('one-way');
+  const [departureDate, setDepartureDate] = useState('');
+  const [returnDate, setReturnDate] = useState('');
   const [budget, setBudget] = useState('');
 
   const today = new Date();
-  const minMonth = today.toISOString().slice(0, 7);
+  const minDate = today.toISOString().split('T')[0];
 
-  const maxDate = new Date();
-  maxDate.setMonth(maxDate.getMonth() + 12);
-  const maxMonth = maxDate.toISOString().slice(0, 7);
+  const max = new Date();
+  max.setDate(max.getDate() + 360);
+  const maxDate = max.toISOString().split('T')[0];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!origin || !month || !budget) {
+
+    if (!origin || !departureDate || !budget) {
       alert('Preencha todos os campos obrigatórios.');
+      return;
+    }
+
+    if (tripType === 'round-trip' && !returnDate) {
+      alert('Informe a data de volta.');
       return;
     }
 
     onSearch({
       origin,
       destination: destination || null,
-      month,
-      year: month.split('-')[0], // extrai ano do input "2025-12"
-      budget: Number(budget)
+      departureDate,
+      returnDate: tripType === 'round-trip' ? returnDate : null,
+      tripType,
+      budget: Number(budget),
     });
   };
 
@@ -59,18 +68,44 @@ const DestinationForm = ({ onSearch, loading }) => {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Mês da viagem</label>
+        <label className="form-label">Tipo de viagem</label>
+        <select
+          className="form-select"
+          value={tripType}
+          onChange={(e) => setTripType(e.target.value)}
+        >
+          <option value="one-way">Só ida</option>
+          <option value="round-trip">Ida e volta</option>
+        </select>
+      </div>
+
+      <div className="mb-3">
+        <label className="form-label">Data de ida</label>
         <input
+          type="date"
           className="form-control"
-          type="month"
-          value={month}
-          onChange={e => setMonth(e.target.value)}
-          min={minMonth}
-          max={maxMonth}
+          value={departureDate}
+          onChange={(e) => setDepartureDate(e.target.value)}
+          min={minDate}
+          max={maxDate}
           required
         />
-
       </div>
+
+      {tripType === 'round-trip' && (
+        <div className="mb-3">
+          <label className="form-label">Data de volta</label>
+          <input
+            type="date"
+            className="form-control"
+            value={returnDate}
+            onChange={(e) => setReturnDate(e.target.value)}
+            min={departureDate || minDate}
+            max={maxDate}
+            required
+          />
+        </div>
+      )}
 
       <div className="mb-3">
         <label className="form-label">Orçamento máximo (R$)</label>
@@ -78,7 +113,7 @@ const DestinationForm = ({ onSearch, loading }) => {
           className="form-control"
           type="number"
           value={budget}
-          onChange={e => setBudget(e.target.value)}
+          onChange={(e) => setBudget(e.target.value)}
           required
         />
       </div>
