@@ -15,7 +15,7 @@ function App() {
       setLoading(true);
       const res = await api.post('/destinations', filters);
       setOriginalResults(res.data);
-      setFilteredResults(res.data); // inicializa com tudo
+      setFilteredResults(res.data);
     } catch (err) {
       console.error('Erro ao buscar destinos:', err);
       alert('Erro ao buscar destinos.');
@@ -27,14 +27,30 @@ function App() {
   return (
     <div className="container py-5">
       <h1 className="mb-4 text-center">✈️ Mochilei Barato</h1>
-      <DestinationForm onSearch={handleSearch} />
-      {originalResults.length > 0 && (
-        <FiltersBar
-          originalResults={originalResults}
-          setFilteredResults={setFilteredResults}
-        />
+
+      {/* Formulário com loading passado como prop */}
+      <DestinationForm onSearch={handleSearch} loading={loading} />
+
+      {/* Indicador de carregamento */}
+      {loading && (
+        <div className="text-center my-4">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Carregando...</span>
+          </div>
+          <p>Buscando voos, por favor aguarde...</p>
+        </div>
       )}
-      <DestinationList destinations={filteredResults} />
+
+      {/* Filtros e resultados */}
+      {!loading && originalResults.length > 0 && (
+        <>
+          <FiltersBar
+            originalResults={originalResults}
+            setFilteredResults={setFilteredResults}
+          />
+          <DestinationList destinations={filteredResults} />
+        </>
+      )}
     </div>
   );
 }

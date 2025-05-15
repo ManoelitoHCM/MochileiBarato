@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import CityAutocomplete from './CityAutocomplete';
 
-const DestinationForm = ({ onSearch }) => {
+const DestinationForm = ({ onSearch, loading }) => {
   const [origin, setOrigin] = useState('');
   const [originLabel, setOriginLabel] = useState('');
   const [destination, setDestination] = useState('');
@@ -11,7 +11,6 @@ const DestinationForm = ({ onSearch }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (!origin || !month || !budget) {
       alert('Preencha todos os campos obrigatórios.');
       return;
@@ -21,6 +20,7 @@ const DestinationForm = ({ onSearch }) => {
       origin,
       destination: destination || null,
       month,
+      year: month.split('-')[0], // extrai ano do input "2025-12"
       budget: Number(budget)
     });
   };
@@ -36,12 +36,7 @@ const DestinationForm = ({ onSearch }) => {
           }}
           placeholder="Digite sua cidade de origem"
         />
-        <input
-          className="form-control mt-2"
-          type="text"
-          value={originLabel}
-          disabled
-        />
+        <input className="form-control mt-2" type="text" value={originLabel} disabled />
       </div>
 
       <div className="mb-3">
@@ -53,12 +48,7 @@ const DestinationForm = ({ onSearch }) => {
           }}
           placeholder="Digite sua cidade de destino"
         />
-        <input
-          className="form-control mt-2"
-          type="text"
-          value={destinationLabel}
-          disabled
-        />
+        <input className="form-control mt-2" type="text" value={destinationLabel} disabled />
       </div>
 
       <div className="mb-3">
@@ -83,8 +73,8 @@ const DestinationForm = ({ onSearch }) => {
         />
       </div>
 
-      <button className="btn btn-primary w-100" type="submit">
-        Buscar voos
+      <button className="btn btn-primary w-100" type="submit" disabled={loading}>
+        {loading ? 'Buscando voos...' : 'Buscar voos'}
       </button>
     </form>
   );
