@@ -22,7 +22,9 @@ router.get('/search', async (req, res) => {
       }
     });
 
-    const cities = response.data.data.map(loc => ({
+    const cities = response.data.data
+      .filter(loc => loc.iataCode) // <-- garante que tenha código IATA
+      .map(loc => ({
       name: loc.name,
       iataCode: loc.iataCode
     }));
