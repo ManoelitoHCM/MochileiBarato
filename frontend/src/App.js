@@ -63,16 +63,14 @@ function App() {
 
       {!loading && hasResults() && (
         <>
-          {/* Exibe filtros apenas para sugestões (array de destinos) */}
-          {Array.isArray(originalResults) && (
-            <FiltersBar
-              originalResults={originalResults}
-              setFilteredResults={setFilteredResults}
-            />
-          )}
+          <FiltersBar
+            originalResults={originalResults}
+            setFilteredResults={setFilteredResults}
+          />
           <DestinationList destinations={filteredResults} />
         </>
       )}
+
     </div>
   );
 }

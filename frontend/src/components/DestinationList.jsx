@@ -5,69 +5,69 @@ import { formatAirline } from '../utils/airlines';
 const formatDateTime = (str) =>
   str
     ? new Date(str).toLocaleString('pt-BR', {
-        weekday: 'short',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     : 'Indefinido';
 
-const renderFlightCard = (dest, idx) => (
-  <Card className="shadow-sm mb-3" key={idx}>
+const renderFlightCard = (flight, index) => (
+  <Card className="shadow-sm mb-4">
     <Card.Body>
-      <Card.Title>{dest.origin} → {dest.destination}</Card.Title>
-      <p><strong>✈️ Companhia:</strong> {formatAirline(dest.airline)}</p>
-      <p><strong>🛫 Partida:</strong> {formatDateTime(dest.departure)}</p>
-      <p><strong>🛬 Chegada:</strong> {formatDateTime(dest.arrival)}</p>
-      <p><strong>⏱️ Duração:</strong> {dest.duration.replace('PT', '').toLowerCase()}</p>
-      <p><strong>💺 Cabine:</strong> <Badge bg="secondary">{dest.cabin}</Badge></p>
-      <p><strong>🛑 Escalas:</strong> {dest.stops}</p>
-      <p><strong>💰 Preço:</strong> <Badge bg="success">R$ {parseFloat(dest.price).toFixed(2)}</Badge></p>
+      <Card.Title>{flight.origin} → {flight.destination}</Card.Title>
+      <p><strong>✈️ Companhia:</strong> {formatAirline(flight.airline)}</p>
+      <p><strong>🛫 Partida:</strong> {formatDateTime(flight.departure)}</p>
+      <p><strong>🛬 Chegada:</strong> {formatDateTime(flight.arrival)}</p>
+      <p><strong>⏱️ Duração:</strong> {flight.duration.replace('PT', '').toLowerCase()}</p>
+      <p><strong>💺 Cabine:</strong> <Badge bg="secondary">{flight.cabin}</Badge></p>
+      <p><strong>🛑 Escalas:</strong> {flight.stops}</p>
+      <p><strong>💰 Preço:</strong> <Badge bg="success">R$ {parseFloat(flight.price).toFixed(2)}</Badge></p>
     </Card.Body>
   </Card>
 );
 
 const DestinationList = ({ destinations }) => {
-  if (!destinations || (!Array.isArray(destinations) && !destinations.outbound)) {
-    return <p className="text-center">Nenhum destino encontrado.</p>;
+  if (!destinations || (!destinations.outbound?.length && !destinations.inbound?.length)) {
+    return <p className="text-center">Nenhum voo encontrado.</p>;
   }
 
-  // Se for sugestão (array simples)
-  if (Array.isArray(destinations)) {
+  const { outbound = [], inbound = [] } = destinations;
+  const isRoundTrip = inbound.length > 0;
+
+  if (isRoundTrip) {
     return (
       <div className="row">
-        {destinations.map((dest, idx) => (
-          <div className="col-md-6" key={idx}>
-            <Card className="shadow-sm mb-3">
-              <Card.Body>
-                <Card.Title>{dest.name}</Card.Title>
-                <p><strong>Atrações:</strong> {dest.attractions?.join(', ') || 'N/A'}</p>
-                <p><strong>Duração estimada:</strong> {dest.duration}</p>
-                <p><strong>Preço:</strong> R$ {parseFloat(dest.price).toFixed(2)}</p>
-              </Card.Body>
-            </Card>
-          </div>
-        ))}
+        <div className="col-md-6">
+          <h4 className="text-center mb-3">✈️ Voos de ida</h4>
+          {outbound.map((flight, idx) => (
+            <div key={idx}>{renderFlightCard(flight, idx)}</div>
+          ))}
+        </div>
+        <div className="col-md-6">
+          <h4 className="text-center mb-3">🛬 Voos de volta</h4>
+          {inbound.map((flight, idx) => (
+            <div key={idx}>{renderFlightCard(flight, idx)}</div>
+          ))}
+        </div>
       </div>
     );
   }
 
-  // Se for ida e volta
-  const { outbound = [], inbound = [] } = destinations;
-
+  // Caso só haja ida
   return (
-    <div className="row">
-      <div className="col-md-6">
-        <h5 className="text-center">🛫 Voos de Ida</h5>
-        {outbound.length === 0 ? <p>Nenhum voo de ida encontrado.</p> : outbound.map(renderFlightCard)}
+    <>
+      <h4 className="text-center mb-3">✈️ Voos de ida</h4>
+      <div className="row">
+        {outbound.map((flight, idx) => (
+          <div className="col-md-6 col-lg-4" key={idx}>
+            {renderFlightCard(flight, idx)}
+          </div>
+        ))}
       </div>
-      <div className="col-md-6">
-        <h5 className="text-center">🛬 Voos de Volta</h5>
-        {inbound.length === 0 ? <p>Nenhum voo de volta encontrado.</p> : inbound.map(renderFlightCard)}
-      </div>
-    </div>
+    </>
   );
 };
 

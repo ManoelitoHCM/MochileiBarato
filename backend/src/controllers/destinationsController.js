@@ -9,6 +9,18 @@ function generateDepartureDateFromInput(dateStr) {
   return inputDate > maxDate ? maxDate.toISOString().split('T')[0] : dateStr;
 }
 
+function removeDuplicateFlights(flights) {
+  const seen = new Set();
+  return flights.filter(flight => {
+    const key = `${flight.departure}-${flight.arrival}-${flight.price}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// ...
+
 class DestinationsController {
   static async searchDestinations(origin, departureDate, budget, destination = null, returnDate = null, tripType = 'one-way') {
     try {
@@ -16,67 +28,76 @@ class DestinationsController {
       const formattedReturn = returnDate ? generateDepartureDateFromInput(returnDate) : null;
 
       if (destination) {
-        const flightResults = await searchAmadeusFlights(origin, destination, formattedDeparture, budget, formattedReturn);
-
-        console.log("🔍 Resultado bruto da API Amadeus:");
-        console.dir(flightResults, { depth: null });
-
+        // Busca ida
+        const outboundFlights = await searchAmadeusFlights(origin, destination, formattedDeparture, budget);
         const outboundResults = [];
-        const inboundResults = [];
 
-        for (const flight of flightResults) {
-          if (!Array.isArray(flight.itineraries) || flight.itineraries.length === 0) {
-            console.warn("Voo sem itinerários:", flight);
-            continue;
-          }
+        for (const flight of outboundFlights) {
+          const itinerary = flight.itineraries?.[0];
+          const segment = itinerary?.segments?.[0];
+          const pricing = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
 
-          const pricing = Array.isArray(flight.travelerPricings)
-            ? flight.travelerPricings[0]?.fareDetailsBySegment?.[0]
-            : null;
-
-          const itineraryOut = flight.itineraries[0];
-          const segmentOut = itineraryOut?.segments?.[0];
-
-          if (segmentOut && pricing) {
+          if (segment && pricing) {
             outboundResults.push({
               price: flight.price.total,
-              duration: itineraryOut.duration,
-              departure: segmentOut.departure.at,
-              arrival: segmentOut.arrival.at,
-              stops: itineraryOut.segments.length - 1,
-              airline: segmentOut.carrierCode,
+              duration: itinerary.duration,
+              departure: segment.departure.at,
+              arrival: segment.arrival.at,
+              stops: itinerary.segments.length - 1,
+              airline: segment.carrierCode,
               cabin: pricing.cabin,
-              aircraft: segmentOut.aircraft?.code,
-              flightNumber: segmentOut.number
+              aircraft: segment.aircraft?.code,
+              flightNumber: segment.number
             });
           }
+        }
 
-          if (tripType === 'round-trip' && flight.itineraries.length > 1) {
-            const itineraryIn = flight.itineraries[1];
-            const segmentIn = itineraryIn?.segments?.[0];
+        // Busca volta (se necessário)
+        const inboundResults = [];
+        // Dentro de DestinationsController.searchDestinations (já está com try/catch para inbound)
+        if (tripType === 'round-trip' && formattedReturn) {
+          try {
+            const returnFlights = await searchAmadeusFlights(destination, origin, formattedReturn, budget);
 
-            if (segmentIn) {
-              inboundResults.push({
-                price: flight.price.total,
-                duration: itineraryIn.duration,
-                departure: segmentIn.departure.at,
-                arrival: segmentIn.arrival.at,
-                stops: itineraryIn.segments.length - 1,
-                airline: segmentIn.carrierCode,
-                cabin: pricing?.cabin,
-                aircraft: segmentIn.aircraft?.code,
-                flightNumber: segmentIn.number
-              });
+            if (returnFlights.length === 0) {
+              console.warn('⚠️ Nenhum voo de volta encontrado. A data de retorno pode estar muito distante ou fora do intervalo de vendas.');
             }
+
+            for (const flight of returnFlights) {
+              const itinerary = flight.itineraries?.[0];
+              const segment = itinerary?.segments?.[0];
+              const pricing = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
+
+              if (segment && pricing) {
+                inboundResults.push({
+                  price: flight.price.total,
+                  duration: itinerary.duration,
+                  departure: segment.departure.at,
+                  arrival: segment.arrival.at,
+                  stops: itinerary.segments.length - 1,
+                  airline: segment.carrierCode,
+                  cabin: pricing.cabin,
+                  aircraft: segment.aircraft?.code,
+                  flightNumber: segment.number
+                });
+              }
+            }
+          } catch (err) {
+            console.warn('❌ Erro ao buscar voos de volta:', err.message || err);
           }
         }
 
         return {
-          outbound: outboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price)),
-          inbound: inboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+          outbound: removeDuplicateFlights(
+            outboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+          ),
+          inbound: removeDuplicateFlights(
+            inboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+          )
         };
       }
 
+      // Sugestão de destinos
       const validCities = cities.filter(city =>
         city.country === "Brasil" &&
         city.iataCode !== origin
