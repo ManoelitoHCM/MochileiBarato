@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import FlightCard from '../components/FlightCard';
 import '../css/ResultsPage.css';
 import { useLocation } from 'react-router-dom';
@@ -18,8 +18,24 @@ const ResultsPage = ({ results, loading }) => {
   const [visibleOutbound, setVisibleOutbound] = useState(5);
   const [visibleInbound, setVisibleInbound] = useState(5);
 
-  const baseOutbound = isRoundTrip ? results.outbound : Array.isArray(results) ? results : results?.data || [];
-  const baseInbound = isRoundTrip ? results.inbound || [] : [];
+  const baseOutbound = useMemo(() => {
+    return isRoundTrip
+      ? results.outbound
+      : Array.isArray(results)
+      ? results
+      : results?.data || [];
+  }, [results, isRoundTrip]);
+
+  const baseInbound = useMemo(() => {
+    return isRoundTrip ? results.inbound || [] : [];
+  }, [results, isRoundTrip]);
+
+  const parseDuration = (str) => {
+    const match = str?.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    const hours = parseInt(match?.[1] || 0, 10);
+    const minutes = parseInt(match?.[2] || 0, 10);
+    return hours * 60 + minutes;
+  };
 
   useEffect(() => {
     const sortAndFilter = (flights) => {
@@ -37,9 +53,8 @@ const ResultsPage = ({ results, loading }) => {
         if (sortOption === 'price') {
           return parseFloat(a.price?.total || a.price) - parseFloat(b.price?.total || b.price);
         } else if (sortOption === 'duration') {
-          const durA = (a.itineraries?.[0]?.duration || a.duration || '').replace(/PT|H|M/g, (m) => ({ H: '*60+', M: '', PT: '' }[m]));
-          const durB = (b.itineraries?.[0]?.duration || b.duration || '').replace(/PT|H|M/g, (m) => ({ H: '*60+', M: '', PT: '' }[m]));
-          return eval(durA) - eval(durB);
+          return parseDuration(a.itineraries?.[0]?.duration || a.duration || '') -
+                 parseDuration(b.itineraries?.[0]?.duration || b.duration || '');
         } else if (sortOption === 'date') {
           const dateA = new Date(a.itineraries?.[0]?.segments?.[0]?.departure?.at || a.departure);
           const dateB = new Date(b.itineraries?.[0]?.segments?.[0]?.departure?.at || b.departure);
@@ -55,7 +70,7 @@ const ResultsPage = ({ results, loading }) => {
     setFilteredInbound(sortAndFilter(baseInbound));
     setVisibleOutbound(5);
     setVisibleInbound(5);
-  }, [results, sortOption, stopsFilter]);
+  }, [baseOutbound, baseInbound, sortOption, stopsFilter]);
 
   const getCarrierName = (offer) => {
     const code = offer.airline || offer?.itineraries?.[0]?.segments?.[0]?.carrierCode;
@@ -125,7 +140,6 @@ const ResultsPage = ({ results, loading }) => {
                 />
               ))}
             </div>
-
             {visibleOutbound < filteredResults.length && (
               <div className="load-more-container">
                 <button className="load-more-button" onClick={() => setVisibleOutbound(visibleOutbound + 5)}>
@@ -147,7 +161,6 @@ const ResultsPage = ({ results, loading }) => {
                   />
                 ))}
               </div>
-
               {visibleInbound < filteredInbound.length && (
                 <div className="load-more-container">
                   <button className="load-more-button" onClick={() => setVisibleInbound(visibleInbound + 5)}>
