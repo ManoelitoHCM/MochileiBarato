@@ -5,7 +5,6 @@ function generateDepartureDateFromInput(dateStr) {
   const inputDate = new Date(dateStr);
   const maxDate = new Date();
   maxDate.setDate(maxDate.getDate() + 360);
-
   return inputDate > maxDate ? maxDate.toISOString().split('T')[0] : dateStr;
 }
 
@@ -26,20 +25,25 @@ class DestinationsController {
       const formattedReturn = returnDate ? generateDepartureDateFromInput(returnDate) : null;
 
       if (destination) {
-        const outboundFlights = await searchAmadeusFlights(origin, destination, formattedDeparture, budget);
+        // 🛫 Voos de ida
+        const { data: outboundFlights, dictionaries } = await searchAmadeusFlights(origin, destination, formattedDeparture, budget);
+        const carriers = dictionaries?.carriers || {};
+
         const outboundResults = outboundFlights.map(flight => {
           const itinerary = flight.itineraries?.[0];
           const segment = itinerary?.segments?.[0];
           const pricing = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
 
           if (segment && pricing) {
+            const airlineName = carriers[segment.carrierCode] || segment.carrierCode;
+
             return {
               price: flight.price.total,
               duration: itinerary.duration,
               departure: segment.departure.at,
               arrival: segment.arrival.at,
               stops: itinerary.segments.length - 1,
-              airline: segment.carrierCode,
+              airline: airlineName,
               cabin: pricing.cabin,
               aircraft: segment.aircraft?.code,
               flightNumber: segment.number
@@ -47,50 +51,56 @@ class DestinationsController {
           }
         }).filter(Boolean);
 
+        // 🛬 Voos de volta (se aplicável)
         const inboundResults = [];
+
         if (tripType === 'round-trip' && formattedReturn) {
           try {
-            const returnFlights = await searchAmadeusFlights(destination, origin, formattedReturn, budget);
-            returnFlights.forEach(flight => {
+            const { data: returnFlights, dictionaries: returnDictionaries } = await searchAmadeusFlights(destination, origin, formattedReturn, budget);
+            const returnCarriers = returnDictionaries?.carriers || {};
+
+            for (const flight of returnFlights) {
               const itinerary = flight.itineraries?.[0];
               const segment = itinerary?.segments?.[0];
               const pricing = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
 
               if (segment && pricing) {
+                const airlineName = returnCarriers[segment.carrierCode] || segment.carrierCode;
+
                 inboundResults.push({
                   price: flight.price.total,
                   duration: itinerary.duration,
                   departure: segment.departure.at,
                   arrival: segment.arrival.at,
                   stops: itinerary.segments.length - 1,
-                  airline: segment.carrierCode,
+                  airline: airlineName,
                   cabin: pricing.cabin,
                   aircraft: segment.aircraft?.code,
                   flightNumber: segment.number
                 });
               }
-            });
+            }
           } catch (err) {
             console.warn('❌ Erro ao buscar voos de volta:', err.message || err);
           }
         }
 
         return {
-          outbound: removeDuplicateFlights(
-            outboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
-          ),
-          inbound: removeDuplicateFlights(
-            inboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
-          )
+          outbound: removeDuplicateFlights(outboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))),
+          inbound: removeDuplicateFlights(inboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price)))
         };
       }
 
-      const validCities = cities.filter(city => city.country === "Brasil" && city.iataCode && city.iataCode !== origin);
+      // 🌎 Sugestão de destinos
+      const validCities = cities.filter(city =>
+        city.country === "Brasil" && city.iataCode && city.iataCode !== origin
+      );
 
       const searchResults = [];
+
       for (const city of validCities) {
         try {
-          const flights = await searchAmadeusFlights(origin, city.iataCode, formattedDeparture, budget);
+          const { data: flights } = await searchAmadeusFlights(origin, city.iataCode, formattedDeparture, budget);
           if (flights && flights.length > 0) {
             const cheapest = flights[0];
             searchResults.push({
