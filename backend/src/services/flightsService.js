@@ -1,15 +1,9 @@
-// backend/src/services/flights.service.js
 const axios = require('axios');
 
-// Autenticação na API da Amadeus
 async function getAmadeusAccessToken() {
   try {
     const clientId = process.env.AMADEUS_CLIENT_ID;
     const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
-
-    console.log('Carregando credenciais:');
-    console.log('Client ID:', process.env.AMADEUS_CLIENT_ID);
-    console.log('Client Secret:', process.env.AMADEUS_CLIENT_SECRET ? '[OK]' : '[MISSING]');
 
     const response = await axios.post(
       'https://test.api.amadeus.com/v1/security/oauth2/token',
@@ -32,7 +26,6 @@ async function getAmadeusAccessToken() {
   }
 }
 
-// Consulta de voos reais
 async function searchAmadeusFlights(origin, destination, departureDate, maxPrice) {
   const token = await getAmadeusAccessToken();
 
@@ -52,11 +45,10 @@ async function searchAmadeusFlights(origin, destination, departureDate, maxPrice
       }
     });
 
-    console.dir(response.data, { depth: null });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("🔍 Resultado bruto da API Amadeus:", response.data);
+    }
 
-    console.log("🔍 Resultado bruto da API Amadeus:");
-    console.log(response.data, { depth: null });
-    
     return response.data.data;
   } catch (error) {
     console.error('Erro ao buscar voos na Amadeus:', error.response?.data || error.message);
@@ -64,7 +56,6 @@ async function searchAmadeusFlights(origin, destination, departureDate, maxPrice
   }
 }
 
-// Exporta tudo junto
 module.exports = {
   getAmadeusAccessToken,
   searchAmadeusFlights,

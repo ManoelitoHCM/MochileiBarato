@@ -4,7 +4,7 @@ const axios = require('axios');
 const { getAmadeusAccessToken } = require('../services/flightsService');
 
 router.get('/search', async (req, res) => {
-  const keyword = req.query.q;
+  const keyword = String(req.query.q || '').trim();
 
   if (!keyword || keyword.length < 2) {
     return res.status(400).json({ error: 'Informe pelo menos 2 letras.' });
@@ -23,7 +23,7 @@ router.get('/search', async (req, res) => {
     });
 
     const cities = response.data.data
-      .filter(loc => loc.iataCode) // <-- garante que tenha código IATA
+      .filter(loc => loc.iataCode)
       .map(loc => ({
         name: loc.name,
         iataCode: loc.iataCode

@@ -1,5 +1,5 @@
 const { searchAmadeusFlights } = require('../services/flightsService');
-const cities = require('../data/cities.json');
+const cities = require('../data/cities.generated.json');
 
 function generateDepartureDateFromInput(dateStr) {
   const inputDate = new Date(dateStr);
@@ -19,8 +19,6 @@ function removeDuplicateFlights(flights) {
   });
 }
 
-// ...
-
 class DestinationsController {
   static async searchDestinations(origin, departureDate, budget, destination = null, returnDate = null, tripType = 'one-way') {
     try {
@@ -28,17 +26,14 @@ class DestinationsController {
       const formattedReturn = returnDate ? generateDepartureDateFromInput(returnDate) : null;
 
       if (destination) {
-        // Busca ida
         const outboundFlights = await searchAmadeusFlights(origin, destination, formattedDeparture, budget);
-        const outboundResults = [];
-
-        for (const flight of outboundFlights) {
+        const outboundResults = outboundFlights.map(flight => {
           const itinerary = flight.itineraries?.[0];
           const segment = itinerary?.segments?.[0];
           const pricing = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
 
           if (segment && pricing) {
-            outboundResults.push({
+            return {
               price: flight.price.total,
               duration: itinerary.duration,
               departure: segment.departure.at,
@@ -48,22 +43,15 @@ class DestinationsController {
               cabin: pricing.cabin,
               aircraft: segment.aircraft?.code,
               flightNumber: segment.number
-            });
+            };
           }
-        }
+        }).filter(Boolean);
 
-        // Busca volta (se necessário)
         const inboundResults = [];
-        // Dentro de DestinationsController.searchDestinations (já está com try/catch para inbound)
         if (tripType === 'round-trip' && formattedReturn) {
           try {
             const returnFlights = await searchAmadeusFlights(destination, origin, formattedReturn, budget);
-
-            if (returnFlights.length === 0) {
-              console.warn('⚠️ Nenhum voo de volta encontrado. A data de retorno pode estar muito distante ou fora do intervalo de vendas.');
-            }
-
-            for (const flight of returnFlights) {
+            returnFlights.forEach(flight => {
               const itinerary = flight.itineraries?.[0];
               const segment = itinerary?.segments?.[0];
               const pricing = flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
@@ -81,7 +69,7 @@ class DestinationsController {
                   flightNumber: segment.number
                 });
               }
-            }
+            });
           } catch (err) {
             console.warn('❌ Erro ao buscar voos de volta:', err.message || err);
           }
@@ -97,25 +85,16 @@ class DestinationsController {
         };
       }
 
-      // Sugestão de destinos
-      const validCities = cities.filter(city =>
-        city.country === "Brasil" &&
-        city.iataCode !== origin
-      );
+      const validCities = cities.filter(city => city.country === "Brasil" && city.iataCode && city.iataCode !== origin);
 
       const searchResults = [];
-
       for (const city of validCities) {
         try {
           const flights = await searchAmadeusFlights(origin, city.iataCode, formattedDeparture, budget);
-
           if (flights && flights.length > 0) {
             const cheapest = flights[0];
-
             searchResults.push({
-              id: city.id,
               name: city.name,
-              attractions: city.attractions,
               price: cheapest.price.total,
               duration: cheapest.itineraries[0].duration,
               iataCode: city.iataCode,

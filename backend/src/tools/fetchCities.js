@@ -1,4 +1,3 @@
-// backend/scripts/fetchCities.js
 require('dotenv').config();
 const fs = require('fs');
 const axios = require('axios');
@@ -28,19 +27,20 @@ async function fetchCitiesByKeyword(keyword, token) {
       Authorization: `Bearer ${token}`,
     },
     params: {
-      keyword: keyword.normalize("NFD").replace(/[\u0300-\u036f]/g, ""), // remove acentos
+      keyword: keyword.normalize("NFD").replace(/[̀-ͯ]/g, ""),
       countryCode: 'BR',
       max: 10,
     },
   });
 
-  return response.data.data.map(loc => ({
-    name: loc.name,
-    iataCode: loc.iataCode,
-    country: 'Brasil',
-  }));
+  return response.data.data
+    .filter(loc => loc.iataCode) // filtra apenas cidades com código IATA
+    .map(loc => ({
+      name: loc.name,
+      iataCode: loc.iataCode,
+      country: 'Brasil',
+    }));
 }
-
 
 async function fetchMultipleCities() {
   const keywords = ['Rio', 'São', 'Salvador', 'Fortaleza', 'Recife', 'Belo', 'Manaus', 'Natal', 'Foz', 'Porto', 'Maceió'];
@@ -48,7 +48,7 @@ async function fetchMultipleCities() {
   const allCities = new Map();
 
   for (const kw of keywords) {
-      const safeKeyword = encodeURIComponent(kw); // <- adiciona isso
+    const safeKeyword = encodeURIComponent(kw);
     try {
       const results = await fetchCitiesByKeyword(safeKeyword, token);
       for (const city of results) {
@@ -63,7 +63,6 @@ async function fetchMultipleCities() {
 
   fs.writeFileSync('src/data/cities.generated.json', JSON.stringify(uniqueCities, null, 2), 'utf-8');
   console.log(`Arquivo gerado com ${uniqueCities.length} cidades.`);
-  console.log('Cidades:', uniqueCities);
 }
 
 fetchMultipleCities();
