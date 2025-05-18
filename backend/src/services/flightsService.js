@@ -47,9 +47,18 @@ async function searchAmadeusFlights(origin, destination, departureDate, maxPrice
 
     if (process.env.NODE_ENV !== 'production') {
       console.log("🔍 Resultado bruto da API Amadeus:", response.data);
+      console.log("itineraries: ", response.data.data[0].itineraries);
+      console.log("price: ", response.data.data[0].price);
+      console.log("pricing: ", response.data.data[0].pricingOptions);
+      console.log("travelerpricing: ", response.data.data[0].travelerPricings);
+      console.log("dictionaries: ", response.data.dictionaries);
+      console.log("dictionaries: ", response.data.dictionaries.locations);
     }
 
-    return response.data.data;
+    return {
+      data: response.data.data,
+      dictionaries: response.data.dictionaries
+    }
   } catch (error) {
     console.error('Erro ao buscar voos na Amadeus:', error.response?.data || error.message);
     throw new Error('Falha na consulta de voos na Amadeus');
