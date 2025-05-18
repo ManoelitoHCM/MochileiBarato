@@ -23,8 +23,7 @@ router.post('/', async (req, res) => {
       budget,
       destination,
       returnDate,
-      tripType,
-      maxResults
+      tripType
     );
 
     res.json(results);
