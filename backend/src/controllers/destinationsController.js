@@ -45,7 +45,7 @@ class DestinationsController {
         }
 
         // 🛫 Voos de ida
-        const { data: outboundFlights, dictionaries } = await searchAmadeusFlights(origin, destination, formattedDeparture, budget);
+        const { data: outboundFlights, dictionaries } = await searchAmadeusFlights(origin, destination, formattedDeparture, budget, maxResults);
         const carriers = dictionaries?.carriers || {};
 
         const outboundResults = outboundFlights.map(flight => {

@@ -14,7 +14,7 @@ async function searchAmadeusFlights(origin, destination, departureDate, maxPrice
         adults: 1,
         maxPrice,
         currencyCode: 'BRL',
-        max: 10
+        max: maxResults
       }
     });
 

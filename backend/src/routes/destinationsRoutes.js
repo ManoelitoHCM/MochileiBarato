@@ -12,6 +12,7 @@ router.post('/', async (req, res) => {
       returnDate,
       tripType,
       budget,
+      maxResults
     } = req.body;
 
     console.log('📥 Dados recebidos:', req.body);
@@ -22,7 +23,8 @@ router.post('/', async (req, res) => {
       budget,
       destination,
       returnDate,
-      tripType
+      tripType,
+      maxResults
     );
 
     res.json(results);
