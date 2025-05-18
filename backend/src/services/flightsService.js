@@ -1,7 +1,20 @@
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+
+const tokenPath = path.join(__dirname, '../cache/token.json');
 
 async function getAmadeusAccessToken() {
   try {
+    // 1. Verifica cache
+    if (fs.existsSync(tokenPath)) {
+      const { token, expiresAt } = JSON.parse(fs.readFileSync(tokenPath, 'utf-8'));
+      if (new Date() < new Date(expiresAt)) {
+        return token; // ✅ token válido
+      }
+    }
+
+    // 2. Solicita novo token à API
     const clientId = process.env.AMADEUS_CLIENT_ID;
     const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
 
@@ -19,7 +32,14 @@ async function getAmadeusAccessToken() {
       }
     );
 
-    return response.data.access_token;
+    // 3. Salva no cache
+    const token = response.data.access_token;
+    const expiresIn = response.data.expires_in || 1800; // segundos
+    const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
+
+    fs.writeFileSync(tokenPath, JSON.stringify({ token, expiresAt }, null, 2), 'utf-8');
+
+    return token;
   } catch (error) {
     console.error('Erro ao obter token da Amadeus:', error.response?.data || error.message);
     throw new Error('Falha ao autenticar com a Amadeus API');
@@ -47,12 +67,6 @@ async function searchAmadeusFlights(origin, destination, departureDate, maxPrice
 
     if (process.env.NODE_ENV !== 'production') {
       console.log("🔍 Resultado bruto da API Amadeus:", response.data);
-      console.log("itineraries: ", response.data.data[0].itineraries);
-      console.log("price: ", response.data.data[0].price);
-      console.log("pricing: ", response.data.data[0].pricingOptions);
-      console.log("travelerpricing: ", response.data.data[0].travelerPricings);
-      console.log("dictionaries: ", response.data.dictionaries);
-      console.log("dictionaries: ", response.data.dictionaries.locations);
     }
 
     return {

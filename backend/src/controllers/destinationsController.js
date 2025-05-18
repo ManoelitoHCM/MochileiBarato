@@ -1,5 +1,17 @@
 const { searchAmadeusFlights } = require('../services/flightsService');
 const cities = require('../data/cities.generated.json');
+const fs = require('fs');
+const path = require('path');
+
+const flightCachePath = path.join(__dirname, '../cache/flights.json');
+let flightCache = {};
+try {
+  if (fs.existsSync(flightCachePath)) {
+    flightCache = JSON.parse(fs.readFileSync(flightCachePath, 'utf-8'));
+  }
+} catch (err) {
+  console.warn('⚠️ Erro ao carregar cache de voos:', err.message);
+}
 
 function generateDepartureDateFromInput(dateStr) {
   const inputDate = new Date(dateStr);
@@ -25,6 +37,13 @@ class DestinationsController {
       const formattedReturn = returnDate ? generateDepartureDateFromInput(returnDate) : null;
 
       if (destination) {
+        const cacheKey = `${origin}-${destination}-${formattedDeparture}-${budget}-${formattedReturn || 'no-return'}-${tripType}`.toLowerCase();
+
+        if (flightCache[cacheKey]) {
+          console.log(`📦 Cache HIT para ${cacheKey}`);
+          return flightCache[cacheKey];
+        }
+
         // 🛫 Voos de ida
         const { data: outboundFlights, dictionaries } = await searchAmadeusFlights(origin, destination, formattedDeparture, budget);
         const carriers = dictionaries?.carriers || {};
@@ -85,13 +104,21 @@ class DestinationsController {
           }
         }
 
-        return {
+        const result = {
           outbound: removeDuplicateFlights(outboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))),
           inbound: removeDuplicateFlights(inboundResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price)))
         };
+
+        // Salva no cache
+        flightCache[cacheKey] = result;
+        fs.writeFile(flightCachePath, JSON.stringify(flightCache, null, 2), () => {
+          console.log(`💾 Cache salvo para ${cacheKey}`);
+        });
+
+        return result;
       }
 
-      // 🌎 Sugestão de destinos
+      // 🌎 Sugestão de destinos (sem cache por enquanto)
       const validCities = cities.filter(city =>
         city.country === "Brasil" && city.iataCode && city.iataCode !== origin
       );

@@ -46,3 +46,4 @@ frontend/build/
 
 # Optional: ignore backend artifacts (caso use build com Babel ou TypeScript)
 backend/dist/
+backend/src/cache/

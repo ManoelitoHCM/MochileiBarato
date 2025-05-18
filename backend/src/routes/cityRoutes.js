@@ -1,13 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 const { getAmadeusAccessToken } = require('../services/flightsService');
 
+const cachePath = path.join(__dirname, '../cache/autocompleteCities.json');
+
+// Carrega cache existente (ou inicia vazio)
+let cache = {};
+try {
+  if (fs.existsSync(cachePath)) {
+    cache = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
+  }
+} catch (err) {
+  console.error('Erro ao ler cache local:', err);
+  cache = {};
+}
+
 router.get('/search', async (req, res) => {
-  const keyword = String(req.query.q || '').trim();
+  const keyword = String(req.query.q || '').trim().toLowerCase();
 
   if (!keyword || keyword.length < 2) {
     return res.status(400).json({ error: 'Informe pelo menos 2 letras.' });
+  }
+
+  if (cache[keyword]) {
+    return res.json(cache[keyword]);
   }
 
   try {
@@ -18,7 +37,7 @@ router.get('/search', async (req, res) => {
       params: {
         keyword: keyword.normalize("NFD").replace(/[\u0300-\u036f]/g, ''),
         countryCode: 'BR',
-        max: 5
+        max: 10
       }
     });
 
@@ -28,6 +47,14 @@ router.get('/search', async (req, res) => {
         name: loc.name,
         iataCode: loc.iataCode
       }));
+
+    // Salva no cache em memória
+    cache[keyword] = cities;
+
+    // Atualiza o arquivo
+    fs.writeFile(cachePath, JSON.stringify(cache, null, 2), 'utf-8', (err) => {
+      if (err) console.error('Erro ao salvar cache:', err);
+    });
 
     res.json(cities);
   } catch (error) {
