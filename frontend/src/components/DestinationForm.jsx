@@ -40,10 +40,12 @@ const DestinationForm = ({ onSearch, loading }) => {
       returnDate: tripType === 'round-trip' ? returnDate : null,
       tripType,
       budget: Number(budget),
+      originLabel,
+      destinationLabel
     });
   };
 
-return (
+  return (
     <form onSubmit={handleSubmit} className="destination-form">
       {/* Cidade de Origem - Versão Simplificada */}
       <div className="form-group">

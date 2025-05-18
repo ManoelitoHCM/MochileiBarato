@@ -3,8 +3,13 @@ import React, { useState, useEffect } from 'react';
 import FlightCard from '../components/FlightCard';
 import FiltersBar from '../components/FiltersBar';
 import '../css/ResultsPage.css';
+import { useLocation } from 'react-router-dom';
 
 const ResultsPage = ({ results, loading }) => {
+  const location = useLocation();
+  const originLabel = location.state?.originLabel;
+  const destinationLabel = location.state?.destinationLabel;
+
   const isRoundTrip = results?.outbound && results?.inbound;
   const carriers = results?.dictionaries?.carriers || {};
 
@@ -128,7 +133,11 @@ const ResultsPage = ({ results, loading }) => {
     <div className="results-container">
       <div className="results-header">
         <h2 className="results-title">Resultados da busca</h2>
-        <p className="results-subtitle">Confira as melhores opções para sua viagem</p>
+        <p className="results-subtitle">
+          {originLabel && destinationLabel
+            ? `Exibindo voos de ${originLabel} para ${destinationLabel}`
+            : 'Confira as melhores opções para sua viagem'}
+        </p>
       </div>
 
       {loading && (

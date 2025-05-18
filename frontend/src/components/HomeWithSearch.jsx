@@ -24,7 +24,13 @@ function HomeWithSearch({ setResults, loading, setLoading }) {
           ? { outbound: data.outbound || [], inbound: data.inbound || [] }
           : data
       );
-      navigate('/resultados');
+
+      navigate('/resultados', {
+        state: {
+          originLabel: filters.originLabel,
+          destinationLabel: filters.destinationLabel
+        }
+      });
     } catch (error) {
       alert('Erro ao buscar destinos');
       console.error(error);
