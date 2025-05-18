@@ -3,7 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const { getAmadeusAccessToken } = require('../services/flightsService');
+const { getAmadeusAccessToken } = require('../services/apiService');
 
 const cachePath = path.join(__dirname, '../cache/autocompleteCities.json');
 
