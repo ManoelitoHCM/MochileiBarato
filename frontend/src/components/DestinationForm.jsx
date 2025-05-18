@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import CityAutocomplete from './CityAutocomplete';
+import '../css/DestinationForm.css';
+import '../css/CityInput.css';
 
 const DestinationForm = ({ onSearch, loading }) => {
   const [origin, setOrigin] = useState('');
@@ -41,34 +43,48 @@ const DestinationForm = ({ onSearch, loading }) => {
     });
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="mb-4">
-      <div className="mb-3">
-        <label className="form-label">Cidade de origem</label>
-        <CityAutocomplete
-          onSelect={(city) => {
-            setOrigin(city.iataCode);
-            setOriginLabel(`${city.name} (${city.iataCode})`);
-          }}
-          placeholder="Digite sua cidade de origem"
-        />
-        <input className="form-control mt-2" type="text" value={originLabel} disabled />
+return (
+    <form onSubmit={handleSubmit} className="destination-form">
+      {/* Cidade de Origem - Versão Simplificada */}
+      <div className="form-group">
+        <label className="form-label">
+          <span className="form-icon">📍</span>
+          Cidade de origem
+        </label>
+        <div className="city-input-container">
+          <CityAutocomplete
+            onSelect={(city) => {
+              setOrigin(city.iataCode);
+              setOriginLabel(`${city.name} (${city.iataCode})`);
+            }}
+            placeholder="Ex: São Paulo (GRU)"
+          />
+        </div>
       </div>
 
-      <div className="mb-3">
-        <label className="form-label">Cidade de destino (opcional)</label>
-        <CityAutocomplete
-          onSelect={(city) => {
-            setDestination(city.iataCode);
-            setDestinationLabel(`${city.name} (${city.iataCode})`);
-          }}
-          placeholder="Digite sua cidade de destino"
-        />
-        <input className="form-control mt-2" type="text" value={destinationLabel} disabled />
+      {/* Cidade de Destino - Versão Simplificada */}
+      <div className="form-group">
+        <label className="form-label">
+          <span className="form-icon">✈️</span>
+          Cidade de destino
+        </label>
+        <div className="city-input-container">
+          <CityAutocomplete
+            onSelect={(city) => {
+              setDestination(city.iataCode);
+              setDestinationLabel(`${city.name} (${city.iataCode})`);
+            }}
+            placeholder="Ex: Rio de Janeiro (GIG)"
+          />
+        </div>
       </div>
 
-      <div className="mb-3">
-        <label className="form-label">Tipo de viagem</label>
+      {/* Tipo de Viagem */}
+      <div className="form-group">
+        <label className="form-label">
+          <span className="form-icon">🔄</span>
+          Tipo de viagem
+        </label>
         <select
           className="form-select"
           value={tripType}
@@ -79,47 +95,75 @@ const DestinationForm = ({ onSearch, loading }) => {
         </select>
       </div>
 
-      <div className="mb-3">
-        <label className="form-label">Data de ida</label>
-        <input
-          type="date"
-          className="form-control"
-          value={departureDate}
-          onChange={(e) => setDepartureDate(e.target.value)}
-          min={minDate}
-          max={maxDate}
-          required
-        />
-      </div>
-
-      {tripType === 'round-trip' && (
-        <div className="mb-3">
-          <label className="form-label">Data de volta</label>
+      {/* Datas */}
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">
+            <span className="form-icon">📅</span>
+            Data de ida
+          </label>
           <input
             type="date"
             className="form-control"
-            value={returnDate}
-            onChange={(e) => setReturnDate(e.target.value)}
-            min={departureDate || minDate}
+            value={departureDate}
+            onChange={(e) => setDepartureDate(e.target.value)}
+            min={minDate}
             max={maxDate}
             required
           />
         </div>
-      )}
 
-      <div className="mb-3">
-        <label className="form-label">Orçamento máximo (R$)</label>
-        <input
-          className="form-control"
-          type="number"
-          value={budget}
-          onChange={(e) => setBudget(e.target.value)}
-          required
-        />
+        {tripType === 'round-trip' && (
+          <div className="form-group">
+            <label className="form-label">
+              <span className="form-icon">📅</span>
+              Data de volta
+            </label>
+            <input
+              type="date"
+              className="form-control"
+              value={returnDate}
+              onChange={(e) => setReturnDate(e.target.value)}
+              min={departureDate || minDate}
+              max={maxDate}
+              required
+            />
+          </div>
+        )}
       </div>
 
-      <button className="btn btn-primary w-100" type="submit" disabled={loading}>
-        {loading ? 'Buscando voos...' : 'Buscar voos'}
+      {/* Orçamento */}
+      <div className="form-group">
+        <label className="form-label">
+          <span className="form-icon">💰</span>
+          Orçamento
+        </label>
+        <div className="budget-input">
+          <span className="currency">R$</span>
+          <input
+            className="form-control"
+            type="number"
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+            max={9999}
+            min={1}
+            required
+          />
+        </div>
+      </div>
+
+      <button className="submit-button" type="submit" disabled={loading}>
+        {loading ? (
+          <>
+            <span className="spinner"></span>
+            Buscando voos...
+          </>
+        ) : (
+          <>
+            <span className="search-icon">🔍</span>
+            Buscar voos
+          </>
+        )}
       </button>
     </form>
   );
