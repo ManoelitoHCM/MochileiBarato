@@ -26,7 +26,6 @@ const ResultsPage = ({ results, loading }) => {
     }
 
     sorted.sort((a, b) => {
-      const getValue = (val, key) => key?.split('.')?.reduce((acc, k) => acc?.[k], val);
       if (sortOption === 'price') {
         return parseFloat(a.price?.total || a.price) - parseFloat(b.price?.total || b.price);
       } else if (sortOption === 'duration') {
@@ -44,9 +43,7 @@ const ResultsPage = ({ results, loading }) => {
     setFilteredResults(sorted);
   }, [results, sortOption, stopsFilter]);
 
-  const hasResults = () => {
-    return filteredResults && filteredResults.length > 0;
-  };
+  const hasResults = () => filteredResults && filteredResults.length > 0;
 
   const getCarrierName = (offer) => {
     const code = offer.airline || offer?.itineraries?.[0]?.segments?.[0]?.carrierCode;
@@ -58,8 +55,17 @@ const ResultsPage = ({ results, loading }) => {
 
     return (
       <>
-        <div className="trip-section">
-          <h3 className="trip-title">✈️ Ida</h3>
+        <div className="results-controls">
+          <div className="redo-search-bar">
+            <button
+              className="redo-search-button"
+              onClick={() => window.history.back()}
+            >
+              <span className="search-icon">🔍</span>
+              Refazer busca
+            </button>
+          </div>
+
           <div className="filters-bar">
             <label>Escalas:
               <select value={stopsFilter} onChange={(e) => setStopsFilter(e.target.value)}>
@@ -85,7 +91,10 @@ const ResultsPage = ({ results, loading }) => {
               </select>
             </label>
           </div>
+        </div>
 
+        <div className="trip-section">
+          <h3 className="trip-title">✈️ Ida</h3>
           <div className="flights-grid">
             {filteredResults.map((offer, index) => (
               <FlightCard
@@ -131,12 +140,6 @@ const ResultsPage = ({ results, loading }) => {
 
       {!loading && hasResults() && (
         <div className="results-content">
-          {!isRoundTrip && (
-            <FiltersBar
-              originalResults={results?.data || results || []}
-              setFilteredResults={setFilteredResults}
-            />
-          )}
           {renderFlights()}
         </div>
       )}
