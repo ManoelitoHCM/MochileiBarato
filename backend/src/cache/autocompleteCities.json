@@ -1,0 +1,100 @@
+{
+  "rio": [
+    {
+      "name": "Cabo Frio",
+      "iataCode": "CFB"
+    },
+    {
+      "name": "Rio de Janeiro",
+      "iataCode": "RIO"
+    },
+    {
+      "name": "Santa Isabel do Rio Negro",
+      "iataCode": "IRZ"
+    },
+    {
+      "name": "Lucas do Rio Verde",
+      "iataCode": "LVR"
+    },
+    {
+      "name": "Tres Rios",
+      "iataCode": "QIH"
+    },
+    {
+      "name": "Rio Claro",
+      "iataCode": "QIQ"
+    },
+    {
+      "name": "Rio Negrinho",
+      "iataCode": "QNE"
+    },
+    {
+      "name": "Santa Cruz Rio Pardo",
+      "iataCode": "QNR"
+    },
+    {
+      "name": "Rio do Sul",
+      "iataCode": "QRU"
+    },
+    {
+      "name": "Rio Branco",
+      "iataCode": "RBR"
+    }
+  ],
+  "rio de jan": [
+    {
+      "name": "Rio de Janeiro",
+      "iataCode": "RIO"
+    }
+  ],
+  "fortale": [
+    {
+      "name": "Fortaleza",
+      "iataCode": "FOR"
+    }
+  ],
+  "porto": [
+    {
+      "name": "Porto Seguro",
+      "iataCode": "BPS"
+    },
+    {
+      "name": "Porto dos Gauchos",
+      "iataCode": "PBV"
+    },
+    {
+      "name": "Porto Alegre do Norte",
+      "iataCode": "PBX"
+    },
+    {
+      "name": "Porto Nacional",
+      "iataCode": "PNB"
+    },
+    {
+      "name": "Porto Alegre",
+      "iataCode": "POA"
+    },
+    {
+      "name": "Porto de Moz",
+      "iataCode": "PTQ"
+    },
+    {
+      "name": "Porto Velho",
+      "iataCode": "PVH"
+    },
+    {
+      "name": "Porto Uniao",
+      "iataCode": "QPU"
+    }
+  ],
+  "sal": [
+    {
+      "name": "Salvador",
+      "iataCode": "SSA"
+    },
+    {
+      "name": "Salinopolis",
+      "iataCode": "OPP"
+    }
+  ]
+}
