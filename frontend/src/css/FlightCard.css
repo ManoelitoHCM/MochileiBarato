@@ -1,0 +1,97 @@
+.flight-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease;
+}
+
+.flight-card:hover {
+  transform: translateY(-4px);
+}
+
+.flight-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.flight-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.route {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.departure,
+.arrival {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.duration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.line {
+  width: 40px;
+  height: 2px;
+  background-color: #ccc;
+  margin: 4px 0;
+}
+
+.flight-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: #444;
+  padding-top: 4px;
+  border-top: 1px solid #eee;
+}
+
+.extras span {
+  background-color: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.select-button {
+  align-self: flex-end;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.select-button:hover {
+  background-color: #0056b3;
+}
