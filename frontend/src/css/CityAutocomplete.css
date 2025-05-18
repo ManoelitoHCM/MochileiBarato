@@ -123,3 +123,9 @@
     width: 100%;
   }
 }
+
+.suggestion-item.disabled {
+  color: #999;
+  cursor: not-allowed;
+  background-color: #f8f8f8;
+}

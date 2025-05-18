@@ -22,6 +22,13 @@ function CityAutocomplete({ onSelect, placeholder }) {
     return () => clearTimeout(delayDebounce);
   }, [input]);
 
+  const handleSelect = (city) => {
+    if (city.disabled) return; // Impede seleção de entradas inválidas
+    onSelect(city);
+    setInput(`${city.name} (${city.iataCode})`);
+    setSuggestions([]);
+  };
+
   return (
     <div className="modern-autocomplete">
       <input
@@ -33,22 +40,20 @@ function CityAutocomplete({ onSelect, placeholder }) {
         placeholder={placeholder}
         className="autocomplete-input"
       />
-      
+
       {isActive && suggestions.length > 0 && (
         <div className="suggestions-container">
-          {suggestions.map((city) => (
+          {suggestions.map((city, idx) => (
             <div
-              key={city.iataCode}
-              className="suggestion-item"
-              onClick={() => {
-                onSelect(city);
-                setInput(`${city.name} (${city.iataCode})`);
-                setSuggestions([]);
-              }}
+              key={city.iataCode || `no-code-${idx}`}
+              className={`suggestion-item ${city.disabled ? 'disabled' : ''}`}
+              onClick={() => handleSelect(city)}
             >
               <div className="city-info">
                 <span className="city-name">{city.name}</span>
-                <span className="airport-code">{city.iataCode}</span>
+                {city.iataCode && (
+                  <span className="airport-code">{city.iataCode}</span>
+                )}
               </div>
               {city.country && (
                 <span className="country-badge">{city.country}</span>
