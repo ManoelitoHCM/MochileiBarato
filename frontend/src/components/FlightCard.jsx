@@ -2,7 +2,7 @@
 import React from 'react';
 import '../css/FlightCard.css';
 
-const FlightCard = ({ offer, carrierName, showExtras = true }) => {
+const FlightCard = ({ offer, carrierName, showExtras = true, onSelect, isSelected }) => {
   const isSimplified = !offer.itineraries;
 
   const formatDuration = (duration) => {
@@ -31,7 +31,7 @@ const FlightCard = ({ offer, carrierName, showExtras = true }) => {
   if (isSimplified) {
     const baggageInfo = `${offer.includedCabinBags || 0} mão / ${offer.includedCheckedBags || 0} desp.`;
     return (
-      <div className="flight-card">
+      <div className={`flight-card ${isSelected ? "selected" : ""}`}>
         <div className="flight-header">
           <span className="airline">{carrierName || offer.airline || 'Companhia'}</span>
           <span className="price">R$ {offer.price}</span>
@@ -70,8 +70,9 @@ const FlightCard = ({ offer, carrierName, showExtras = true }) => {
             baggageInfo
           })}
         </div>
-
-        <button className="select-button">Selecionar voo</button>
+        <button className="select-button" onClick={onSelect}>
+          Selecionar voo
+        </button>
       </div>
     );
   }
@@ -85,7 +86,7 @@ const FlightCard = ({ offer, carrierName, showExtras = true }) => {
   const baggageInfo = `${pricingInfo.includedCabinBags?.quantity || 0} mão / ${pricingInfo.includedCheckedBags?.quantity || 0} desp.`;
 
   return (
-    <div className="flight-card">
+    <div className={`flight-card ${isSelected ? "selected" : ""}`}>
       <div className="flight-header">
         <span className="airline">{carrierName || firstSegment.carrierCode}</span>
         <span className="price">R$ {price.total}</span>
@@ -125,7 +126,11 @@ const FlightCard = ({ offer, carrierName, showExtras = true }) => {
         })}
       </div>
 
-      <button className="select-button">Selecionar voo</button>
+      {isSelected ? (
+          <button className="select-button selected" disabled>Selecionado</button>
+        ) : (
+          <button className="select-button" onClick={onSelect}>Selecionar voo</button>
+        )}
     </div>
   );
 };

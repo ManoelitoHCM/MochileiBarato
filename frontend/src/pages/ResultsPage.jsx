@@ -1,7 +1,9 @@
+// src/pages/ResultsPage.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import FlightCard from '../components/FlightCard';
 import '../css/ResultsPage.css';
 import { useLocation } from 'react-router-dom';
+import { generateCombinedTicketPdf } from '../utils/generateCombinedTicketsPdf';
 
 const ResultsPage = ({ results, loading }) => {
   const location = useLocation();
@@ -17,13 +19,15 @@ const ResultsPage = ({ results, loading }) => {
   const [stopsFilter, setStopsFilter] = useState('all');
   const [visibleOutbound, setVisibleOutbound] = useState(5);
   const [visibleInbound, setVisibleInbound] = useState(5);
+  const [selectedOutbound, setSelectedOutbound] = useState(null);
+  const [selectedInbound, setSelectedInbound] = useState(null);
 
   const baseOutbound = useMemo(() => {
     return isRoundTrip
       ? results.outbound
       : Array.isArray(results)
-      ? results
-      : results?.data || [];
+        ? results
+        : results?.data || [];
   }, [results, isRoundTrip]);
 
   const baseInbound = useMemo(() => {
@@ -54,7 +58,7 @@ const ResultsPage = ({ results, loading }) => {
           return parseFloat(a.price?.total || a.price) - parseFloat(b.price?.total || b.price);
         } else if (sortOption === 'duration') {
           return parseDuration(a.itineraries?.[0]?.duration || a.duration || '') -
-                 parseDuration(b.itineraries?.[0]?.duration || b.duration || '');
+            parseDuration(b.itineraries?.[0]?.duration || b.duration || '');
         } else if (sortOption === 'date') {
           const dateA = new Date(a.itineraries?.[0]?.segments?.[0]?.departure?.at || a.departure);
           const dateB = new Date(b.itineraries?.[0]?.segments?.[0]?.departure?.at || b.departure);
@@ -137,6 +141,26 @@ const ResultsPage = ({ results, loading }) => {
                   key={`outbound-${index}`}
                   offer={offer}
                   carrierName={getCarrierName(offer)}
+                  isSelected={selectedOutbound?.id === offer.id}
+                  onSelect={() => {
+                    if (!selectedOutbound) {
+                      const origin = offer.origin;
+                      const destination = offer.destination;
+                      const pricing = offer.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
+                      const baggageInfo = `${pricing?.includedCabinBags?.quantity || 0} mão / ${pricing?.includedCheckedBags?.quantity || 0} desp.`;
+
+                      const enrichedOffer = {
+                        ...offer,
+                        origin,
+                        destination,
+                        baggageInfo
+                      };
+
+                      setSelectedOutbound(enrichedOffer);
+                    } else {
+                      alert('Você já selecionou um voo de ida. Selecione agora um voo de volta.');
+                    }
+                  }}
                 />
               ))}
             </div>
@@ -158,6 +182,36 @@ const ResultsPage = ({ results, loading }) => {
                     key={`inbound-${index}`}
                     offer={offer}
                     carrierName={getCarrierName(offer)}
+                    isSelected={selectedInbound?.id === offer.id}
+                    onSelect={() => {
+                      if (!selectedOutbound) {
+                        alert("Selecione primeiro um voo de ida.");
+                        return;
+                      }
+                      if (!selectedInbound) {
+                        const origin = offer.origin;
+                        const destination = offer.destination;
+                        const pricing = offer.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
+                        const baggageInfo = `${pricing?.includedCabinBags?.quantity || 0} mão / ${pricing?.includedCheckedBags?.quantity || 0} desp.`;
+
+                        console.log("origin", origin);
+                        console.log("destination", destination);
+
+                        const enrichedOffer = {
+                          ...offer,
+                          origin,
+                          destination,
+                          baggageInfo
+                        };
+
+                        setSelectedInbound(enrichedOffer);
+                        generateCombinedTicketPdf(selectedOutbound, enrichedOffer);
+                        setSelectedOutbound(null);
+                        setSelectedInbound(null);
+                      } else {
+                        alert("Você já selecionou um voo de volta.");
+                      }
+                    }}
                   />
                 ))}
               </div>

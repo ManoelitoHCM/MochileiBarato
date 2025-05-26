@@ -67,6 +67,7 @@ class DestinationsController {
               aircraft: segment.aircraft?.code,
               flightNumber: segment.number
             };
+
           }
         }).filter(Boolean);
 
@@ -91,6 +92,8 @@ class DestinationsController {
                   duration: itinerary.duration,
                   departure: segment.departure.at,
                   arrival: segment.arrival.at,
+                  origin: segment.departure.iataCode,
+                  destination: segment.arrival.iataCode,
                   stops: itinerary.segments.length - 1,
                   airline: airlineName,
                   cabin: pricing.cabin,
