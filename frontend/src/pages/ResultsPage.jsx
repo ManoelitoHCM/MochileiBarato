@@ -144,8 +144,8 @@ const ResultsPage = ({ results, loading }) => {
                   isSelected={selectedOutbound?.id === offer.id}
                   onSelect={() => {
                     if (!selectedOutbound) {
-                      const origin = offer.origin;
-                      const destination = offer.destination;
+                      const origin = offer.itineraries?.[0]?.segments?.[0]?.departure?.iataCode;
+                      const destination = offer.itineraries?.[0]?.segments?.slice(-1)[0]?.arrival?.iataCode;
                       const pricing = offer.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
                       const baggageInfo = `${pricing?.includedCabinBags?.quantity || 0} mão / ${pricing?.includedCheckedBags?.quantity || 0} desp.`;
 
@@ -189,13 +189,10 @@ const ResultsPage = ({ results, loading }) => {
                         return;
                       }
                       if (!selectedInbound) {
-                        const origin = offer.origin;
-                        const destination = offer.destination;
+                        const origin = offer.itineraries?.[0]?.segments?.[0]?.departure?.iataCode;
+                        const destination = offer.itineraries?.[0]?.segments?.slice(-1)[0]?.arrival?.iataCode;
                         const pricing = offer.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
                         const baggageInfo = `${pricing?.includedCabinBags?.quantity || 0} mão / ${pricing?.includedCheckedBags?.quantity || 0} desp.`;
-
-                        console.log("origin", origin);
-                        console.log("destination", destination);
 
                         const enrichedOffer = {
                           ...offer,
