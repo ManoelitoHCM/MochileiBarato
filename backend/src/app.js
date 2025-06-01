@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const destinationsRouter = require('./routes/destinationsRoutes');
 const cityRoutes = require('./routes/cityRoutes');
+const suggestionsRoutes = require('./routes/suggestionsRoutes');
 
 const app = express();
 
@@ -15,5 +16,6 @@ app.use(express.json());
 // Rotas
 app.use('/api/destinations', destinationsRouter);
 app.use('/api/cities', cityRoutes);
+app.use('/api/suggestions', suggestionsRoutes);
 
 module.exports = app;

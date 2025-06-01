@@ -7,10 +7,12 @@ import '../css/HomeWithSearch.css';
 function HomeWithSearch({ setResults, loading, setLoading }) {
   const navigate = useNavigate();
 
-  const handleSearch = async (filters) => {
+  const handleSearch = async (filters, isSuggestion = false) => {
     setLoading(true);
     try {
-      const res = await fetch('/api/destinations', {
+      const endpoint = isSuggestion ? '/api/suggestions' : '/api/destinations';
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(filters),
@@ -21,14 +23,14 @@ function HomeWithSearch({ setResults, loading, setLoading }) {
 
       setResults(
         isRoundTrip
-          ? { outbound: data.outbound || [], inbound: data.inbound || [] }
-          : data
+          ? { outbound: data.outbound || [], inbound: data.inbound || [], dictionaries: data.dictionaries }
+          : { data: data.data || [], dictionaries: data.dictionaries }
       );
 
       navigate('/resultados', {
         state: {
           originLabel: filters.originLabel,
-          destinationLabel: filters.destinationLabel
+          destinationLabel: filters.destinationLabel || null
         }
       });
     } catch (error) {

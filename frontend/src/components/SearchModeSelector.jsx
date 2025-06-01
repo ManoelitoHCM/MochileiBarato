@@ -20,9 +20,9 @@ const SearchModeSelector = ({ onSearch, loading }) => {
 
 
       {mode === 'traditional' ? (
-        <DestinationForm onSearch={onSearch} loading={loading} />
+        <DestinationForm onSearch={(filters) => onSearch(filters, false)} loading={loading} />
       ) : (
-        <SuggestionForm onSearch={onSearch} loading={loading} />
+        <SuggestionForm onSearch={(filters) => onSearch(filters, true)} loading={loading} />
       )}
     </div>
   );
