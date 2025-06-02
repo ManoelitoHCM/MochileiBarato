@@ -6,6 +6,7 @@ require('dotenv').config();
 const destinationsRouter = require('./routes/destinationsRoutes');
 const cityRoutes = require('./routes/cityRoutes');
 const suggestionsRoutes = require('./routes/suggestionsRoutes');
+const flightRoutes = require('./routes/destinationsRoutes');
 
 const app = express();
 
@@ -17,5 +18,6 @@ app.use(express.json());
 app.use('/api/destinations', destinationsRouter);
 app.use('/api/cities', cityRoutes);
 app.use('/api/suggestions', suggestionsRoutes);
+app.use('/api/flights', flightRoutes);
 
 module.exports = app;

@@ -53,8 +53,8 @@ const SuggestionForm = ({ onSearch, loading }) => {
         <div className="city-input-container">
           <CityAutocomplete
             onSelect={(city) => {
-              setOrigin(city.iataCode);
-              setOriginLabel(`${city.name} (${city.iataCode})`);
+              setOrigin(city.cityCode || city.iataCode); 
+              setOriginLabel(`${city.name} (${city.cityCode || city.iataCode})`);
             }}
             placeholder="Ex: Fortaleza (FOR)"
           />

@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomeWithSearch from './components/HomeWithSearch';
-import ResultsPage from './pages/ResultsPage';
+import ResultsPageTraditional from './pages/ResultsPageTraditional';
+import ResultsPageSuggestion from './pages/ResultsPageSuggestion';
 
 function App() {
   const [results, setResults] = useState(null);
@@ -22,8 +23,16 @@ function App() {
           }
         />
         <Route
-          path="/resultados"
-          element={<ResultsPage results={results} loading={loading} />}
+          path="/results-traditional"
+          element={
+            <ResultsPageTraditional results={results} loading={loading} />
+          }
+        />
+        <Route
+          path="/results-suggestion"
+          element={
+            <ResultsPageSuggestion results={results} loading={loading} />
+          }
         />
       </Routes>
     </BrowserRouter>

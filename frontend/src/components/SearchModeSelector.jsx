@@ -1,3 +1,4 @@
+// src/components/SearchModeSelector.jsx
 import React, { useState } from 'react';
 import DestinationForm from './DestinationForm';
 import SuggestionForm from './SuggestionForm';
@@ -18,11 +19,10 @@ const SearchModeSelector = ({ onSearch, loading }) => {
         </button>
       </div>
 
-
       {mode === 'traditional' ? (
-        <DestinationForm onSearch={(filters) => onSearch(filters, false)} loading={loading} />
+        <DestinationForm onSearch={(filters) => onSearch({ ...filters, searchMode: 'traditional' })} loading={loading} />
       ) : (
-        <SuggestionForm onSearch={(filters) => onSearch(filters, true)} loading={loading} />
+        <SuggestionForm onSearch={(filters) => onSearch({ ...filters, searchMode: 'suggestion' })} loading={loading} />
       )}
     </div>
   );

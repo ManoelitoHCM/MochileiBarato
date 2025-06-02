@@ -2,7 +2,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const { getAmadeusAccessToken } = require('../services/apiService');
-const { searchAmadeusFlights } = require('../services/flightsService');
+const DestinationsController = require('./destinationsController');
 
 async function getSuggestions(req, res) {
   const { origin, departureDate, returnDate, tripType, budget } = req.body;
@@ -11,8 +11,10 @@ async function getSuggestions(req, res) {
   try {
     const token = await getAmadeusAccessToken();
 
-    // Carrega e processa o cache autocompleteCities.json
-    const autocompleteCities = JSON.parse(fs.readFileSync(path.join(__dirname, '../cache/autocompleteCities.json'), 'utf-8'));
+    const autocompleteCities = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '../cache/autocompleteCities.json'), 'utf-8')
+    );
+
     const iataToCityName = {};
     Object.values(autocompleteCities).flat().forEach(entry => {
       if (!iataToCityName[entry.iataCode]) {
@@ -20,56 +22,65 @@ async function getSuggestions(req, res) {
       }
     });
 
-    const originName = iataToCityName[origin]?.toUpperCase() || origin;
+    // Normaliza o código da cidade de origem
+    const cityEntry = Object.values(autocompleteCities).flat().find(entry => entry.iataCode === origin);
+    const normalizedOrigin = cityEntry?.cityCode || origin;
+    const originName = iataToCityName[normalizedOrigin]?.toUpperCase() || normalizedOrigin;
 
-    // 1. Buscar destinos recomendados com base na origem
+    // Consulta sugestões de destinos da Amadeus
     const recoResponse = await axios.get('https://test.api.amadeus.com/v1/reference-data/recommended-locations', {
       headers: { Authorization: `Bearer ${token}` },
       params: {
-        cityCodes: origin,
+        cityCodes: normalizedOrigin,
+        destinationCountryCodes: 'BR',
       },
     });
 
     const recommendedCities = recoResponse.data?.data || [];
-    console.log("📍 Cidades sugeridas:", recommendedCities.map(c => `${c.name} (${c.iataCode})`));
+    console.log("📍 Cidades sugeridas pela Amadeus:", recommendedCities.map(c => `${c.name} (${c.iataCode})`));
 
     const results = [];
-    const dictionaries = { carriers: {} };
+    const dictionaries = {
+      carriers: {},
+      locations: {},
+      aircraft: {},
+    };
 
-    // 2. Para cada cidade recomendada, buscar voos
     for (const city of recommendedCities) {
-      console.log(`🔁 Buscando voos de ${originName} (${origin}) para ${city.name?.toUpperCase()} (${city.iataCode})`);
-      console.log(`📅 Data: ${departureDate} | Tipo: ${tripType} | Budget: R$${budget}`);
+      const cityCode = city.iataCode;
+      const cityName = city.name?.toUpperCase() || cityCode;
+
+      console.log(`🔁 Buscando voos via controller de ${originName} (${normalizedOrigin}) para ${cityName} (${cityCode})`);
 
       try {
-        const res = await searchAmadeusFlights(
-          origin,
-          city.iataCode,
+        // Consulta a lógica tradicional de voos
+        let result = await DestinationsController.searchDestinations(
+          normalizedOrigin,
           departureDate,
+          budget,
+          cityCode,
           returnDate,
-          tripType,
-          budget
+          tripType
         );
 
-        if (res?.data?.length) {
-          console.log(`✅ ${city.iataCode}: ${res.data.length} voos encontrados dentro do orçamento.`);
-
-          const enriched = res.data.map((offer) => ({
-            ...offer,
-            origin: origin,
+        // Adiciona informações de origem e destino visível
+        const enrich = (arr) =>
+          arr.map((f) => ({
+            ...f,
             originName: originName,
-            destination: city.iataCode,
-            destinationName: iataToCityName[city.iataCode]?.toUpperCase() || city.name?.toUpperCase() || city.iataCode
+            destinationName: cityName
           }));
 
-          results.push(...enriched);
-          Object.assign(dictionaries.carriers, res.dictionaries?.carriers || {});
+        if (result?.outbound?.length) {
+          result.outbound = enrich(result.outbound);
+          results.push(...result.outbound);
+        } else if (Array.isArray(result) && result.length > 0) {
+          results.push(...enrich(result));
         } else {
-          console.log(`❌ ${city.iataCode}: nenhum voo encontrado ou fora do orçamento.`);
+          console.log(`❌ Nenhum voo encontrado para ${cityCode}`);
         }
-
       } catch (err) {
-        console.warn(`⚠️ Erro ao buscar ${city.iataCode}:`, err.message);
+        console.warn(`⚠️ Erro ao buscar destino ${cityCode}:`, err.message);
       }
     }
 
@@ -77,6 +88,7 @@ async function getSuggestions(req, res) {
       data: results,
       dictionaries
     });
+
   } catch (err) {
     console.error('❌ Erro ao gerar sugestões:', err.message);
     res.status(500).json({ error: 'Erro ao gerar sugestões de destinos.' });
