@@ -6,7 +6,6 @@ const DestinationsController = require('./destinationsController');
 
 async function getSuggestions(req, res) {
   const { origin, departureDate, returnDate, tripType, budget } = req.body;
-  console.log("📥 Requisição recebida para sugestão:", req.body);
 
   try {
     const token = await getAmadeusAccessToken();
@@ -37,7 +36,6 @@ async function getSuggestions(req, res) {
     });
 
     const recommendedCities = recoResponse.data?.data || [];
-    console.log("📍 Cidades sugeridas pela Amadeus:", recommendedCities.map(c => `${c.name} (${c.iataCode})`));
 
     const results = [];
     const dictionaries = {
@@ -50,7 +48,6 @@ async function getSuggestions(req, res) {
       const cityCode = city.iataCode;
       const cityName = city.name?.toUpperCase() || cityCode;
 
-      console.log(`🔁 Buscando voos via controller de ${originName} (${normalizedOrigin}) para ${cityName} (${cityCode})`);
 
       try {
         // Consulta a lógica tradicional de voos

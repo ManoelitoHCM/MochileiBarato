@@ -15,7 +15,6 @@ router.post('/', async (req, res) => {
       maxResults
     } = req.body;
 
-    console.log('📥 Dados recebidos:', req.body);
 
     const results = await DestinationsController.searchDestinations(
       origin,

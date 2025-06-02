@@ -19,7 +19,7 @@ async function searchAmadeusFlights(origin, destination, departureDate, maxPrice
     });
 
     if (process.env.NODE_ENV !== 'production') {
-      //console.log("🔍 Resultado bruto da API Amadeus:", response.data);
+      console.log("🔍 Resultado bruto da API Amadeus:", response.data);
     }
 
     return {
