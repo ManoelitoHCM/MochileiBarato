@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import FlightCard from '../components/FlightCard';
 import '../css/ResultsPage.css';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { generateTicketPdf } from '../utils/generateTicketPdf';
 
 const ResultsPageSuggestion = ({ results, loading }) => {
   const location = useLocation();
@@ -13,6 +14,7 @@ const ResultsPageSuggestion = ({ results, loading }) => {
   const locations = location.state?.dictionaries?.locations || {};
 
   const [visiblePerCity, setVisiblePerCity] = useState({});
+  const [selectedFlight, setSelectedFlight] = useState(null);
 
   const getCarrierName = (offer) => {
     const code =
@@ -44,6 +46,12 @@ const ResultsPageSuggestion = ({ results, loading }) => {
     }));
   };
 
+  const handleSelectFlight = (flight, cityCode) => {
+    setSelectedFlight(flight);
+    const destinationLabel = `${getCityName(cityCode)} (${cityCode})`;
+    generateTicketPdf(flight, 'Ida', originLabel, destinationLabel);
+  };
+
   return (
     <div className="results-container">
       <div className="results-header">
@@ -72,6 +80,8 @@ const ResultsPageSuggestion = ({ results, loading }) => {
                   offer={offer}
                   carrierName={getCarrierName(offer)}
                   showExtras={true}
+                  onSelect={() => handleSelectFlight(offer, cityCode)}
+                  isSelected={selectedFlight === offer}
                 />
               ))}
             </div>
