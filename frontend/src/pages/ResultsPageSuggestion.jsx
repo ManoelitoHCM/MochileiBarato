@@ -71,7 +71,7 @@ const ResultsPageSuggestion = ({ results, loading }) => {
         Object.entries(groupedByDestination).map(([cityCode, offers]) => (
           <div key={cityCode} className="trip-section">
             <h3 className="trip-title">
-              🌍 Voos de {offers[0]?.originName || originLabel} ({offers[0]?.origin || ''}) para {offers[0]?.destinationName || getCityName(cityCode)} ({cityCode})
+              🌍 Voos de {originLabel} para {offers[0]?.destinationName || getCityName(cityCode)} ({cityCode})
             </h3>
             <div className="flights-grid">
               {offers.slice(0, visiblePerCity[cityCode] || 3).map((offer, index) => (

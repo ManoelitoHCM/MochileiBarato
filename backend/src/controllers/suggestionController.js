@@ -68,6 +68,8 @@ async function getSuggestions(req, res) {
           arr.map((f) => ({
             ...f,
             originName: originName,
+            destinationName: cityName,
+            destination: cityCode,
             destinationName: cityName
           }));
 
