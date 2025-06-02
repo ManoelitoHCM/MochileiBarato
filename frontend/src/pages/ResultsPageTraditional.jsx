@@ -1,16 +1,25 @@
-import React from 'react';
+// src/pages/ResultsPageTraditional.jsx
+import React, { useState, useEffect } from 'react';
 import FlightCard from '../components/FlightCard';
 import '../css/ResultsPage.css';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { generateCombinedTicketPdf } from '../utils/generateCombinedTicketsPdf';
+import { generateTicketPdf } from '../utils/generateTicketPdf';
 
 const ResultsPageTraditional = ({ results, loading }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const originLabel = location.state?.originLabel;
   const destinationLabel = location.state?.destinationLabel;
-
-  // Usa os dicionários enviados via location.state (garantido no redirect)
   const carriers = location.state?.dictionaries?.carriers || {};
+
+  const [selectedOutbound, setSelectedOutbound] = useState(null);
+  const [selectedInbound, setSelectedInbound] = useState(null);
+
+  const isRoundTrip = !!results?.outbound?.length && !!results?.inbound?.length;
+  console.log("isRoundTrip", isRoundTrip);
+  console.log("ResultsPageTraditional - results", results);
+
 
   const getCarrierName = (offer) => {
     const code =
@@ -21,6 +30,26 @@ const ResultsPageTraditional = ({ results, loading }) => {
     return carriers[code] || code || 'Companhia';
   };
 
+  const handleSelectFlight = (flight, type) => {
+    if (type === 'outbound') {
+      console.log("is rount trip ", isRoundTrip);
+      setSelectedOutbound(flight);
+      if (!isRoundTrip) {
+        console.log("🧾 PDF - Gerando bilhete de ida");
+        generateTicketPdf(flight, 'Ida', originLabel, destinationLabel);
+      }
+    } else {
+      setSelectedInbound(flight);
+    }
+  };
+
+  useEffect(() => {
+    if (isRoundTrip && selectedOutbound && selectedInbound) {
+      generateCombinedTicketPdf(selectedOutbound, selectedInbound, originLabel, destinationLabel);
+      setSelectedOutbound(null);
+      setSelectedInbound(null);
+    }
+  }, [selectedOutbound, selectedInbound, isRoundTrip, originLabel, destinationLabel]);
 
   return (
     <div className="results-container">
@@ -53,6 +82,8 @@ const ResultsPageTraditional = ({ results, loading }) => {
                     key={`outbound-${index}`}
                     offer={offer}
                     carrierName={getCarrierName(offer)}
+                    onSelect={() => handleSelectFlight(offer, 'outbound')}
+                    isSelected={selectedOutbound === offer}
                   />
                 ))}
               </div>
@@ -69,13 +100,15 @@ const ResultsPageTraditional = ({ results, loading }) => {
                     key={`inbound-${index}`}
                     offer={offer}
                     carrierName={getCarrierName(offer)}
+                    onSelect={() => handleSelectFlight(offer, 'inbound')}
+                    isSelected={selectedInbound === offer}
                   />
                 ))}
               </div>
             </>
           )}
 
-          {/* Somente Ida (quando results é um array simples) */}
+          {/* Só Ida */}
           {!results?.outbound && Array.isArray(results) && results.length > 0 && (
             <>
               <h3 className="trip-title">🛫 Voos disponíveis</h3>
@@ -85,6 +118,8 @@ const ResultsPageTraditional = ({ results, loading }) => {
                     key={`single-${index}`}
                     offer={offer}
                     carrierName={getCarrierName(offer)}
+                    onSelect={() => handleSelectFlight(offer, 'outbound')}
+                    isSelected={selectedOutbound === offer}
                   />
                 ))}
               </div>

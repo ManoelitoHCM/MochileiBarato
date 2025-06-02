@@ -14,14 +14,6 @@ const ResultsPageSuggestion = ({ results, loading }) => {
 
   const [visiblePerCity, setVisiblePerCity] = useState({});
 
-  // 📦 LOG DE DEPURAÇÃO
-  useEffect(() => {
-    console.log("📍 [ResultsPageSuggestion] Dados recebidos via location.state:", location.state);
-    console.log("📦 [ResultsPageSuggestion] Resultado de busca (results):", results);
-    console.log("🧭 Dicionário de companhias aéreas:", carriers);
-    console.log("🌆 Dicionário de locais:", locations);
-  }, [location, results]);
-
   const getCarrierName = (offer) => {
     const code =
       offer?.validatingAirlineCodes?.[0] ||
